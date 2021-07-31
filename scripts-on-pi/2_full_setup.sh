@@ -46,6 +46,27 @@ usermod -aG docker pi
 # restarts - you may need to reconnect a new ssh session.
 
 ####
+# Install pip (prerequisite for docker-compose)
+####
+apt-get install -y python3-distutils python3-apt python3-pip
+# curl -s https://bootstrap.pypa.io/get-pip.py | python3
+
+####
+# Install docker-compose
+# https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
+####
+apt-get install libffi-dev libssl-dev
+apt install python3-dev
+pip3 install docker-compose
+# Note - still not part of $PATH. Update to bashrc?
+
+####
+# Set docker containers to auto-restart
+# https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
+####
+sudo systemctl enable docker
+
+####
 # Mount BERTHA
 ####
 yes | apt install exfat-fuse
@@ -61,3 +82,5 @@ mount -a
 docker pull jellyfin/jellyfin
 
 # TODO: Pull RC files
+# If you install Plex again, consider docker version:
+# https://github.com/plexinc/pms-docker
