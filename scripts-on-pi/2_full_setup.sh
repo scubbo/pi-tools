@@ -52,6 +52,11 @@ apt-get install -y python3-distutils python3-apt python3-pip
 # curl -s https://bootstrap.pypa.io/get-pip.py | python3
 
 ####
+# Install boto3
+####
+pip3 install boto3
+
+####
 # Install docker-compose
 # https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
 ####
