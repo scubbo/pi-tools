@@ -89,3 +89,6 @@ docker pull jellyfin/jellyfin
 # TODO: Pull RC files
 # If you install Plex again, consider docker version:
 # https://github.com/plexinc/pms-docker
+
+# TODO - service-setup for hass-backup-sync-server.py,
+# and crontab for the backup client
