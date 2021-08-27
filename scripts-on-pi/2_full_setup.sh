@@ -106,6 +106,8 @@ apt install -y jq  # Ah, simplicity :)
 # $ ssh -N -L 9091:localhost:9090 <pi_name>
 ####
 docker run --name prometheus -d -p 127.0.0.1:9090:9090 prom/prometheus
+# ...and push-gateway server
+docker run --name prom-gateway -d -p 127.0.0.1:9091:9091 prom/pushgateway
 
 ####
 # Install and run Prometheus Exporter
@@ -121,7 +123,13 @@ cd node_exporter-${latestExporterVersion}.linux-armv7
 
 # And configure Prometheus to see the new metrics
 # ...there _must_ be a better way...
-docker exec -i prometheus sh -c "echo -e '  - job_name: \"node\"\n    static_configs:\n      - targets: [\"localhost:9100\"]' >> /etc/prometheus/prometheus.yml"
+# https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
+docker exec -i prometheus sh -c "echo -e '  - job_name: \"node\"\n    static_configs:\n      - targets: [\"host.docker.internal:9100\"]' >> /etc/prometheus/prometheus.yml"
+docker exec -i prometheus sh -c "echo -e '  - job_name: \"pushGateway\"\n    static_configs:\n      - targets: [\"host.docker.internal:9091\"]' >> /etc/prometheus/prometheus.yml"
+# Note - this next line is untested
+# https://www.robustperception.io/reloading-prometheus-configuration
+# If it doesn't work, do `docker restart prometheus`
+curl -X POST http://localhost:9090/-/reload
 
 
 
