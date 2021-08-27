@@ -92,3 +92,50 @@ docker pull jellyfin/jellyfin
 
 # TODO - service-setup for hass-backup-sync-server.py,
 # and crontab for the backup client
+
+####
+# Install jq
+####
+apt install -y jq  # Ah, simplicity :)
+
+####
+# Install and run Prometheus
+#
+# Note this makes it only accessible from the Pi itself - would need to set up an ssh tunnel
+# to view from laptop:
+# $ ssh -N -L 9091:localhost:9090 <pi_name>
+####
+docker run --name prometheus -d -p 127.0.0.1:9090:9090 prom/prometheus
+
+####
+# Install and run Prometheus Exporter
+# Note - intentionally run as a standalone process, not a Docker container. Think about it... :)
+####
+latestExporterVersion=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases | jq -r '.[] | .tag_name' | grep -v -E 'rc.?[[:digit:]]$' | perl -pe 's/^v//' | sort -V | tail -n 1)
+wget -q -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${latestExporterVersion}/node_exporter-${latestExporterVersion}.linux-armv7.tar.gz
+mv /tmp/node_exporter.tar.gz /opt
+tar xvfz node_exporter.tar.gz
+rm node_exporter.tar.gz
+cd node_exporter-${latestExporterVersion}.linux-armv7
+./node_exporter &
+
+# And configure Prometheus to see the new metrics
+# ...there _must_ be a better way...
+docker exec -i prometheus sh -c "echo -e '  - job_name: \"node\"\n    static_configs:\n      - targets: [\"localhost:9100\"]' >> /etc/prometheus/prometheus.yml"
+
+
+
+####
+# Install Grafana
+# (Note - if desired, we could move this prep into the 1_setup script, to reduce
+# duplicate `update`)
+# https://grafana.com/tutorials/install-grafana-on-raspberry-pi/
+# Note - should change password
+####
+wget -q -O - https://packages.grafana.com/gpg.key | apt-key add -
+echo "deb https://packages.grafana.com/oss/deb stable main" | tee -a /etc/apt/sources.list.d/grafana.list
+apt-get update
+apt-get install -y grafana
+/bin/systemctl enable grafana-server
+/bin/systemctl start grafana-server
+# Still need to set it up - e.g. add the Prometheus Data Source
