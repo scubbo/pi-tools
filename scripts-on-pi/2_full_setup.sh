@@ -37,9 +37,12 @@ apt-get install avahi-daemon
 ####
 # Install Docker
 # https://phoenixnap.com/kb/docker-on-raspberry-pi
+# TODO: consider switching to the Repo method: https://docs.docker.com/engine/install/ubuntu/
+# When I tried it on 2021-08-30, there was no Buster version - seems we need to use armhf architecture
 ####
 curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
+sudo chmod +x get-docker.sh
+sh ./get-docker.sh
 rm get-docker.sh
 usermod -aG docker pi
 # This permission-change might not take effect until the session
