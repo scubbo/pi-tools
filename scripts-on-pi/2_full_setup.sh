@@ -90,6 +90,15 @@ mount -a
 docker pull jellyfin/jellyfin
 docker run -d -v /mnt/BERTHA/etc/jellyfin/config/:/config -v /mnt/BERTHA/etc/jellyfin/cache/:/cache -v /mnt/BERTHA/media/:/media --net=host jellyfin/jellyfin:latest
 
+####
+# Set up NFS share
+# https://pimylifeup.com/raspberry-pi-nfs/
+#
+# Currently disabled since not needed, but commited into source control just in case
+####
+#apt-get install nfs-kernel-server -y
+#echo "/mnt/BERTHA 192.168.0.0/16(rw,all_squash,insecure,async,no_subtree_check,anonuid=$(id -u pi),anongid=$(id -g pi))" >> /etc/exports
+
 
 # TODO: Pull RC files
 # If you install Plex again, consider docker version:
