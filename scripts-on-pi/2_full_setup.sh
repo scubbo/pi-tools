@@ -126,7 +126,7 @@ mv /tmp/node_exporter.tar.gz /opt
 tar xvfz node_exporter.tar.gz
 rm node_exporter.tar.gz
 cd node_exporter-${latestExporterVersion}.linux-armv7
-./node_exporter &
+screen -d -m ./node_exporter
 
 # And configure Prometheus to see the new metrics
 # ...there _must_ be a better way...
