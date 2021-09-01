@@ -32,4 +32,4 @@ scrape_configs:
       - targets: ["host.docker.internal:9100"]
   - job_name: "push_gateway"
     static_configs:
-      - targets: ["host.docker.internal:9091"]
+      - targets: ["prom-gateway:9091"]

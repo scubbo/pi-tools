@@ -129,16 +129,18 @@ wget --quiet -O /etc/prometheus/prometheus.yml https://raw.githubusercontent.com
 # $ ssh -N -L 9091:localhost:9090 <pi_name>
 #
 # --web.enable=lifecycle allows curling the `/-/reload` endpoint - https://github.com/prometheus/prometheus/issues/5986
+# Should probably encapsulate this in a docker-compose...
 ####
+docker network create prom-network
 docker run --name prometheus \
   -d -p 127.0.0.1:9090:9090 \
+  --net prom-network \
   --add-host host.docker.internal:host-gateway \
   -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
   prom/prometheus \
   --web.enable-lifecycle \
   --config.file=/etc/prometheus/prometheus.yml
-# ...and push-gateway server
-docker run --name prom-gateway -d -p 127.0.0.1:9091:9091 prom/pushgateway
+docker run --name prom-gateway -d -p 127.0.0.1:9091:9091 --net prom-network prom/pushgateway
 
 ####
 # Install and run Prometheus Exporter
