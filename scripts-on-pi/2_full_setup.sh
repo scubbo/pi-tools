@@ -88,6 +88,8 @@ mount -a
 # Install jellyfin
 ####
 docker pull jellyfin/jellyfin
+docker run -d -v /mnt/BERTHA/etc/jellyfin/config/:/config -v /mnt/BERTHA/etc/jellyfin/cache/:/cache -v /mnt/BERTHA/media/:/media --net=host jellyfin/jellyfin:latest
+
 
 # TODO: Pull RC files
 # If you install Plex again, consider docker version:
