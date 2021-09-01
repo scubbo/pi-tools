@@ -166,3 +166,10 @@ apt-get install -y grafana
 /bin/systemctl enable grafana-server
 /bin/systemctl start grafana-server
 # Still need to set it up - e.g. add the Prometheus Data Source
+
+####
+# Run the sync-server
+# TODO - probably need to source this somehow, cannot assume it will be present in ha_backups?
+####
+screen -d -m /mnt/BERTHA/ha_backups/hass-backup-sync-server.py
+echo "10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
