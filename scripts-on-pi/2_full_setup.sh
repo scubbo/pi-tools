@@ -107,8 +107,12 @@ apt install -y jq  # Ah, simplicity :)
 # Note this makes it only accessible from the Pi itself - would need to set up an ssh tunnel
 # to view from laptop:
 # $ ssh -N -L 9091:localhost:9090 <pi_name>
+#
+# --web.enable=lifecycle allows curling the `/-/reload` endpoint - https://github.com/prometheus/prometheus/issues/5986
 ####
-docker run --name prometheus -d -p 127.0.0.1:9090:9090 prom/prometheus
+docker run --name prometheus -d -p 127.0.0.1:9090:9090 --add-host host.docker.internal:host-gateway prom/prometheus \
+  --web.enable-lifecycle \
+  --config.file=/etc/prometheus/prometheus.yml
 # ...and push-gateway server
 docker run --name prom-gateway -d -p 127.0.0.1:9091:9091 prom/pushgateway
 
