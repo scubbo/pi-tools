@@ -112,6 +112,15 @@ docker run -d -v /mnt/BERTHA/etc/jellyfin/config/:/config -v /mnt/BERTHA/etc/jel
 ####
 apt install -y jq  # Ah, simplicity :)
 
+
+####
+# Get configuration for Prometheus
+# Note - consider doing this from the directly-pulled repo instead?
+####
+mkdir -p /etc/prometheus/
+wget --quiet -O /etc/prometheus/prometheus.yml https://raw.githubusercontent.com/scubbo/pi-tools/main/config/prometheus.yml
+
+
 ####
 # Install and run Prometheus
 #
@@ -121,7 +130,11 @@ apt install -y jq  # Ah, simplicity :)
 #
 # --web.enable=lifecycle allows curling the `/-/reload` endpoint - https://github.com/prometheus/prometheus/issues/5986
 ####
-docker run --name prometheus -d -p 127.0.0.1:9090:9090 --add-host host.docker.internal:host-gateway prom/prometheus \
+docker run --name prometheus \
+  -d -p 127.0.0.1:9090:9090 \
+  --add-host host.docker.internal:host-gateway \
+  -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+  prom/prometheus \
   --web.enable-lifecycle \
   --config.file=/etc/prometheus/prometheus.yml
 # ...and push-gateway server
@@ -138,18 +151,6 @@ tar xvfz node_exporter.tar.gz
 rm node_exporter.tar.gz
 cd node_exporter-${latestExporterVersion}.linux-armv7
 screen -d -m ./node_exporter
-
-# And configure Prometheus to see the new metrics
-# ...there _must_ be a better way...
-# https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
-docker exec -i prometheus sh -c "echo -e '  - job_name: \"node\"\n    static_configs:\n      - targets: [\"host.docker.internal:9100\"]' >> /etc/prometheus/prometheus.yml"
-docker exec -i prometheus sh -c "echo -e '  - job_name: \"pushGateway\"\n    static_configs:\n      - targets: [\"host.docker.internal:9091\"]' >> /etc/prometheus/prometheus.yml"
-# Note - this next line is untested
-# https://www.robustperception.io/reloading-prometheus-configuration
-# If it doesn't work, do `docker restart prometheus`
-curl -X POST http://localhost:9090/-/reload
-
-
 
 ####
 # Install Grafana
