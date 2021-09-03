@@ -173,5 +173,5 @@ apt-get install -y grafana
 # Run the sync-server
 # TODO - probably need to source this somehow, cannot assume it will be present in ha_backups?
 ####
-screen -d -m /mnt/BERTHA/ha_backups/hass-backup-sync-server.py
+pushd /mnt/BERTHA/ha_backups && screen -d -m ./hass-backup-sync-server.py && popd
 echo "10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
