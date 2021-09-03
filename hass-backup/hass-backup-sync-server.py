@@ -4,9 +4,12 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 import contextlib
+import json
 import socketserver
+import tarfile
 
 from argparse import ArgumentParser
+from datetime import datetime
 from errno import EPERM
 from paramiko import SSHClient, AutoAddPolicy
 from pathlib import Path
@@ -14,6 +17,9 @@ from scp import SCPClient
 from shutil import copy, move
 from sys import exit
 from tempfile import TemporaryDirectory
+
+# https://github.com/prometheus/client_python#exporting-to-a-pushgateway
+from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
@@ -29,6 +35,11 @@ for handler in handlers:
 
 HOST = 'localhost'
 PORT = 9999
+
+# Prometheus variables
+prometheus_registry = CollectorRegistry()
+LATEST_BACKUP_TIMESTAMP = Gauge('hassbackup_latest_backup_timestamp', 'Timestamp when the latest backup was created', registry=prometheus_registry)
+LATEST_SYNC_TIMESTAMP = Gauge('hassbackup_latest_sync_timestamp', 'Timestamp when the last sync was carried out', registry=prometheus_registry)
 
 
 def start_backup_sync_server():
@@ -130,6 +141,14 @@ def _do_copy(scp):
     for pb in previous_backups.iterdir():
       pb.unlink()
     previous_backups.rmdir()
+
+  LATEST_SYNC_TIMESTAMP.set_to_current_time()
+  LATEST_BACKUP_TIMESTAMP.set(int(max([_get_timestamp_of_backup(b) for b in backups.iterdir() if b.suffix == '.tar']).timestamp()))
+  push_to_gateway('localhost:9091', job='hass_backup', registry=prometheus_registry)
+
+def _get_timestamp_of_backup(backup_path: Path):
+  info = json.load(tarfile.open(str(backup_path)).extractfile('./snapshot.json'))
+  return datetime.strptime(info['date'], '%Y-%m-%dT%H:%M:%S.%f%z')
 
 
 if __name__ == '__main__':
