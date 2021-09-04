@@ -147,8 +147,22 @@ def _do_copy(scp):
   push_to_gateway('localhost:9091', job='hass_backup', registry=prometheus_registry)
 
 def _get_timestamp_of_backup(backup_path: Path):
-  info = json.load(tarfile.open(str(backup_path)).extractfile('./snapshot.json'))
+  info = _get_info_from_backup(backup_path)
   return datetime.strptime(info['date'], '%Y-%m-%dT%H:%M:%S.%f%z')
+
+def _get_info_from_backup(backup_path: Path):
+  possible_file_names = ['snapshot.json', 'backup.json']
+  # https://stackoverflow.com/a/62777331/1040915
+  exc = None
+  for file_name in possible_file_names:
+    try:
+      return json.load(tarfile.open(str(backup_path)).extractfile(f'./{file_name}'))
+    except Exception as e:
+      exc = e
+  else:
+    LOGGER.exception(e)
+    LOGGER.error(f'Error while handling {backup_path}')
+    raise exc
 
 
 if __name__ == '__main__':
