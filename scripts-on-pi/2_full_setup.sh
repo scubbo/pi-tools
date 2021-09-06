@@ -86,9 +86,18 @@ mount -a
 
 ####
 # Install jellyfin
+#
+# Note Jellyfin's config will need to have ``<EnableMetrics>` set to `true` to enable Prometheus to see them.
+# https://github.com/jellyfin/jellyfin/pull/2985
 ####
 docker pull jellyfin/jellyfin
-docker run -d -v /mnt/BERTHA/etc/jellyfin/config/:/config -v /mnt/BERTHA/etc/jellyfin/cache/:/cache -v /mnt/BERTHA/media/:/media --net=host jellyfin/jellyfin:latest
+docker run -d \
+  -v /mnt/BERTHA/etc/jellyfin/config/:/config \
+  -v /mnt/BERTHA/etc/jellyfin/cache/:/cache \
+  -v /mnt/BERTHA/media/:/media \
+  --net=host \
+  --name jellyfin \
+  jellyfin/jellyfin:latest
 
 ####
 # Set up NFS share
