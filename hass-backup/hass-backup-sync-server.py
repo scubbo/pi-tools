@@ -14,7 +14,7 @@ from errno import EPERM
 from paramiko import SSHClient, AutoAddPolicy
 from pathlib import Path
 from scp import SCPClient
-from shutil import copy, move
+from shutil import copy, move, rmtree
 from sys import exit
 from tempfile import TemporaryDirectory
 
@@ -138,9 +138,7 @@ def _do_copy(scp):
     log.error('No backups were copied over! Erroring out. Previous backups maintained')
     sys.exit(1)
   else:
-    for pb in previous_backups.iterdir():
-      pb.unlink()
-    previous_backups.rmdir()
+    rmtree(str(previous_backups), ignore_errors=True)
 
   LATEST_SYNC_TIMESTAMP.set_to_current_time()
   LATEST_BACKUP_TIMESTAMP.set(int(max([_get_timestamp_of_backup(b) for b in backups.iterdir() if b.suffix == '.tar']).timestamp()))
