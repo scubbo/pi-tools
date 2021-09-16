@@ -97,6 +97,7 @@ docker run -d \
   -v /mnt/BERTHA/media/:/media \
   --net=host \
   --name jellyfin \
+  --restart always \
   jellyfin/jellyfin:latest
 
 ####
@@ -146,10 +147,15 @@ docker run --name prometheus \
   --net prom-network \
   --add-host host.docker.internal:host-gateway \
   -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+  --restart always \
   prom/prometheus \
   --web.enable-lifecycle \
   --config.file=/etc/prometheus/prometheus.yml
-docker run --name prom-gateway -d -p 127.0.0.1:9091:9091 --net prom-network prom/pushgateway
+docker run --name prom-gateway \
+  -d -p 127.0.0.1:9091:9091 \
+  --net prom-network \
+  --restart always \
+  prom/pushgateway
 
 ####
 # Install and run Prometheus Exporter
