@@ -34,19 +34,32 @@ echo $hostname > /etc/hostname
 ####
 apt-get install avahi-daemon
 
+
+command_exists() {
+  command -v "$@" > /dev/null 2>&1
+}
+
 ####
 # Install Docker
 # https://phoenixnap.com/kb/docker-on-raspberry-pi
 # TODO: consider switching to the Repo method: https://docs.docker.com/engine/install/ubuntu/
 # When I tried it on 2021-08-30, there was no Buster version - seems we need to use armhf architecture
 ####
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo chmod +x get-docker.sh
-sh ./get-docker.sh
-rm get-docker.sh
-usermod -aG docker pi
-# This permission-change might not take effect until the session
-# restarts - you may need to reconnect a new ssh session.
+if command_exists docker; then
+  # This `command_exists` check is adapted from Docker itself:
+  # https://get.docker.com/
+  echo "Docker already installed - skipping"
+else
+  # Docker does not exist - install it
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sudo chmod +x get-docker.sh
+  sh ./get-docker.sh
+  rm get-docker.sh
+  usermod -aG docker pi
+  # This permission-change might not take effect until the session
+  # restarts - you may need to reconnect a new ssh session.
+fi
+
 
 ####
 # Install pip (prerequisite for docker-compose)
@@ -78,9 +91,13 @@ sudo systemctl enable docker
 # Mount BERTHA
 ####
 yes | apt install exfat-fuse
-sudo mkdir /mnt/BERTHA
+sudo mkdir -p /mnt/BERTHA
 berthaDev=$(blkid | grep 'BERTHAIII' | perl -pe 's/(.*):.*/$1/')
 berthaUUID=$(blkid | grep 'BERTHAIII' | perl -pe 's/.* UUID="(.*?)".*/$1/')
+if [ -z "$berthaDev" ] || [ -z "$berthaUUID" ]; then
+  echo "One of the bertha-variables is empty. Exiting (do you have the Hard Drive plugged in?"
+  exit 1
+fi
 echo "UUID=$berthaUUID /mnt/BERTHA exfat defaults,auto,users,rw,nofail,umask=000 0 0" >> /etc/fstab
 mount -a
 
@@ -164,6 +181,7 @@ docker run --name prom-gateway \
 latestExporterVersion=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases | jq -r '.[] | .tag_name' | grep -v -E 'rc.?[[:digit:]]$' | perl -pe 's/^v//' | sort -V | tail -n 1)
 wget -q -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${latestExporterVersion}/node_exporter-${latestExporterVersion}.linux-armv7.tar.gz
 mv /tmp/node_exporter.tar.gz /opt
+cd /opt
 tar xvfz node_exporter.tar.gz
 rm node_exporter.tar.gz
 cd node_exporter-${latestExporterVersion}.linux-armv7
@@ -183,6 +201,13 @@ apt-get install -y grafana
 /bin/systemctl enable grafana-server
 /bin/systemctl start grafana-server
 # Still need to set it up - e.g. add the Prometheus Data Source
+echo "#######"
+echo "###"
+echo "#"
+echo "NOTE! You still need to log in to Prometheus (admin/admin) and set it up!"
+echo "#"
+echo "###"
+echo "#####"
 
 ####
 # Run the sync-server
