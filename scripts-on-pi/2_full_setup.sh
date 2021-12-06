@@ -19,11 +19,18 @@ if [ -z "$hostname" ]; then
   exit 1
 fi
 
+# Capture baseDir so that we can refer back to it later for e.g. configuration files, even after `cd`-ing around
+baseDir=$(pwd)
+if [ -z $(ls $baseDir | grep "2_full_setup.sh") ]; then
+   echo "This script must be run from its own directory (\`./2_full_setup.sh\` rather than e.g. \`./pi-tools\scripts-on-pi/2_full_setup.sh\`).";
+   exit 1
+fi
+
+
 ####
 # Change Hostname
 # https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/
 ####
-
 echo "Setting hostname to $hostname"
 perl -i'' -pe "s/raspberrypi/$hostname/" /etc/hosts
 echo $hostname > /etc/hostname
@@ -178,6 +185,7 @@ docker run --name prom-gateway \
 # Install and run Prometheus Exporter
 # Note - intentionally run as a standalone process, not a Docker container. Think about it... :)
 ####
+curDir=$(pwd)
 latestExporterVersion=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases | jq -r '.[] | .tag_name' | grep -v -E 'rc.?[[:digit:]]$' | perl -pe 's/^v//' | sort -V | tail -n 1)
 wget -q -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${latestExporterVersion}/node_exporter-${latestExporterVersion}.linux-armv7.tar.gz
 mv /tmp/node_exporter.tar.gz /opt
@@ -186,6 +194,7 @@ tar xvfz node_exporter.tar.gz
 rm node_exporter.tar.gz
 cd node_exporter-${latestExporterVersion}.linux-armv7
 screen -d -m ./node_exporter
+cd $curDir
 
 ####
 # Install Grafana
@@ -208,6 +217,16 @@ echo "NOTE! You still need to log in to Prometheus (admin/admin) and set it up!"
 echo "#"
 echo "###"
 echo "#####"
+
+####
+# Install PiVPN
+####
+curl -L https://install.pivpn.io > install.sh
+chmod +x install.sh
+# TODO - shouldn't rely on relative directories for config - instead, save a location
+./install.sh --unattended ../config/pi-vpn-options.conf
+rm install.sh
+echo "PiVPN installed (remember to open the appropriate Firewall port!)"
 
 ####
 # Run the sync-server
