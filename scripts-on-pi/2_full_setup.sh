@@ -218,6 +218,13 @@ echo "#"
 echo "###"
 echo "#####"
 
+
+####
+# Sync domain name
+####
+echo "Also note the updateDNS will not work unless you sync AWS credentials to this PI"
+echo "10 * * * * $baseDir/../updateDNS.py --profile personal --dns-name scubbo.org" > /etc/cron.d/updateDNS
+
 ####
 # Install PiVPN
 ####
