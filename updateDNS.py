@@ -5,7 +5,7 @@ import boto3
 import pathlib
 import requests
 
-CACHE_DIR = pathlib.Path.home.joinpath('.dns-update')
+CACHE_DIR = pathlib.Path.home().joinpath('.dns-update')
 
 def main(args):
   if not CACHE_DIR.exists():
