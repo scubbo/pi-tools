@@ -128,10 +128,13 @@ docker run -d \
 # Set up NFS share
 # https://pimylifeup.com/raspberry-pi-nfs/
 #
-# Currently disabled since not needed, but commited into source control just in case
+# Currently disabled since not needed (and NFS doesn't work on FAT drives),
+# but commited into source control just in case
 ####
-#apt-get install nfs-kernel-server -y
-#echo "/mnt/BERTHA 192.168.0.0/16(rw,all_squash,insecure,async,no_subtree_check,anonuid=$(id -u pi),anongid=$(id -g pi))" >> /etc/exports
+# apt-get install nfs-kernel-server -y
+# mkdir -p /mnt/BERTHA/nfsShare
+# echo "/mnt/BERTHA/nfsShare 192.168.42.0/24(rw,all_squash,insecure,async,no_subtree_check,anonuid=$(id -u pi),anongid=$(id -g pi))" >> /etc/exports
+# exportfs -ra
 
 
 # TODO: Pull RC files
@@ -251,3 +254,27 @@ apt-get install vim-gui-common vim-runtime -y
 # Install zsh
 ####
 apt-get install zsh -y
+
+####
+# Install dotfiles
+####
+pushd $HOME
+git clone git@github.com:scubbo/dotfiles.git
+# Note that we do _not_ use the `setup.sh` script that exists in that repo, since that's mostly intended
+# for setting up an Amazon development laptop. But a lot of this is copied from it :)
+ln -s dotfiles/zshrc .zshrc
+# TODO - this is the Amazon-mactop-specific .local. Create a Pi-specific one!
+ln -s dotfiles/gitignore_global .gitignore_global
+ln -s dotfiles/gitconfig .gitconfig
+ln -s dotfiles/vimrc .vimrc
+ln -s dotfiles/bin bin
+popd
+
+
+####
+# Install Obsidian
+# https://forum.obsidian.md/t/raspberry-pi-installation/23893/6
+####
+sudo apt install -y flatpak
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user flathub md.obsidian.Obsidian
