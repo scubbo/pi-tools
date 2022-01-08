@@ -245,4 +245,9 @@ echo "10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup p
 ####
 # Update vim
 ####
-apt-get install vim-gui-common vim-runtime
+apt-get install vim-gui-common vim-runtime -y
+
+####
+# Install zsh
+####
+apt-get install zsh -y
