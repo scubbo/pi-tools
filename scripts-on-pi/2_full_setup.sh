@@ -241,3 +241,8 @@ echo "PiVPN installed (remember to open the appropriate Firewall port!)"
 ####
 pushd /mnt/BERTHA/ha_backups && screen -d -m ./hass-backup-sync-server.py && popd
 echo "10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
+
+####
+# Update vim
+####
+apt-get install vim-gui-common vim-runtime
