@@ -11,12 +11,12 @@ fi
 # Apt updates
 ####
 apt-get update
-yes | apt-get upgrade
+apt-get -y upgrade
 
 ####
 # Install screen
 ####
-yes | apt-get install screen
+apt-get install -y screen
 
 ###
 # Install ssh key...
@@ -27,14 +27,6 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCyQIZAWHbGpiSQHaD8ph33Q5PWJy72OyqzcB
 echo "Finished updating ssh authorized_keys"
 
 ###
-# ...and add key to ssh-agent (this will prompt for the )
-# This will error if the key isn't present (TODO: better error message, prompting to copy it over?)
-# TODO: it's probably not great that I'm using a single key for a) permitting ssh to Pi and b) permitting ssh to GitHub?
-###
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_rsa
-
-###
 # Remove ability to authenticate with password
 ###
 echo "Removing ability to authenticate with password. Keep another ssh connection to this host live just in case you need to interrupt anything"
@@ -42,3 +34,4 @@ echo "Press any key to continue"
 read -n 1 a
 echo "Not yet automated - do the instructions from here:"
 echo "https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/"
+
