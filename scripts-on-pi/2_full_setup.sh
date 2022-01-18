@@ -114,15 +114,17 @@ mount -a
 # Note Jellyfin's config will need to have ``<EnableMetrics>` set to `true` to enable Prometheus to see them.
 # https://github.com/jellyfin/jellyfin/pull/2985
 ####
-docker pull jellyfin/jellyfin
-docker run -d \
-  -v /mnt/BERTHA/etc/jellyfin/config/:/config \
-  -v /mnt/BERTHA/etc/jellyfin/cache/:/cache \
-  -v /mnt/BERTHA/media/:/media \
-  --net=host \
-  --name jellyfin \
-  --restart always \
-  jellyfin/jellyfin:latest
+if [[ $(docker ps --filter "name=jellyfin" | wc -l) -lt 2 ]]; then
+  docker pull jellyfin/jellyfin
+  docker run -d \
+    -v /mnt/BERTHA/etc/jellyfin/config/:/config \
+    -v /mnt/BERTHA/etc/jellyfin/cache/:/cache \
+    -v /mnt/BERTHA/media/:/media \
+    --net=host \
+    --name jellyfin \
+    --restart always \
+    jellyfin/jellyfin:latest
+fi
 
 ####
 # Set up NFS share
@@ -168,21 +170,27 @@ wget --quiet -O /etc/prometheus/prometheus.yml https://raw.githubusercontent.com
 # --web.enable=lifecycle allows curling the `/-/reload` endpoint - https://github.com/prometheus/prometheus/issues/5986
 # Should probably encapsulate this in a docker-compose...
 ####
-docker network create prom-network
-docker run --name prometheus \
-  -d -p 127.0.0.1:9090:9090 \
-  --net prom-network \
-  --add-host host.docker.internal:host-gateway \
-  -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
-  --restart always \
-  prom/prometheus \
-  --web.enable-lifecycle \
-  --config.file=/etc/prometheus/prometheus.yml
-docker run --name prom-gateway \
-  -d -p 127.0.0.1:9091:9091 \
-  --net prom-network \
-  --restart always \
-  prom/pushgateway
+if [[ $(docker network ls --filter name=prom-network | wc -l) -lt 2 ]]; then
+  docker network create prom-network
+fi
+if [[ $(docker ps --filter "name=prometheus" | wc -l) -lt 2 ]]; then
+  docker run --name prometheus \
+    -d -p 127.0.0.1:9090:9090 \
+    --net prom-network \
+    --add-host host.docker.internal:host-gateway \
+    -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+    --restart always \
+    prom/prometheus \
+    --web.enable-lifecycle \
+    --config.file=/etc/prometheus/prometheus.yml
+fi
+if [[ $(docker ps --filter "name=prom-gateway" | wc -l) -lt 2 ]]; then
+  docker run --name prom-gateway \
+    -d -p 127.0.0.1:9091:9091 \
+    --net prom-network \
+    --restart always \
+    prom/pushgateway
+fi
 
 ####
 # Install and run Prometheus Exporter
@@ -258,23 +266,16 @@ apt-get install zsh -y
 ####
 # Install dotfiles
 ####
-pushd $HOME
+pushd /home/pi
 git clone git@github.com:scubbo/dotfiles.git
 # Note that we do _not_ use the `setup.sh` script that exists in that repo, since that's mostly intended
 # for setting up an Amazon development laptop. But a lot of this is copied from it :)
 ln -s dotfiles/zshrc .zshrc
 # TODO - this is the Amazon-mactop-specific .local. Create a Pi-specific one!
 ln -s dotfiles/gitignore_global .gitignore_global
+rm .gitconfig
 ln -s dotfiles/gitconfig .gitconfig
 ln -s dotfiles/vimrc .vimrc
 ln -s dotfiles/bin bin
 popd
 
-
-####
-# Install Obsidian
-# https://forum.obsidian.md/t/raspberry-pi-installation/23893/6
-####
-sudo apt install -y flatpak
-flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user flathub md.obsidian.Obsidian
