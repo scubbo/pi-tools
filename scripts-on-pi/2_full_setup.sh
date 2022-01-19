@@ -244,7 +244,7 @@ chmod +x install.sh
 # TODO - shouldn't rely on relative directories for config - instead, save a location
 ./install.sh --unattended ../config/pi-vpn-options.conf
 rm install.sh
-echo "PiVPN installed (remember to open the appropriate Firewall port!)"
+echo "PiVPN installed (remember to open the appropriate Firewall port and add clients!)"
 
 ####
 # Run the sync-server
