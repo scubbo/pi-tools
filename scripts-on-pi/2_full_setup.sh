@@ -259,9 +259,10 @@ echo "10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup p
 apt-get install vim-gui-common vim-runtime -y
 
 ####
-# Install zsh
+# Install zsh, and make it the default shell
 ####
 apt-get install zsh -y
+usermod --shell /bin/zsh pi
 
 ####
 # Install dotfiles
