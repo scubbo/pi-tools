@@ -11,11 +11,23 @@ while getopts h: flag
 do
     case "${flag}" in
         h) hostname=${OPTARG};;
+        gu) grafanaUsername=${OPTARG};;
+        gp) grafanaPassword=${OPTARG};;
     esac
 done
 
 if [ -z "$hostname" ]; then
   echo "Hostname not set"
+  exit 1
+fi
+
+if [ -z "$grafanaUsername" ]; then
+  echo "Grafana Username not set"
+  exit 1
+fi
+
+if [ -z "$grafanaPassword" ]; then
+  echo "Grafana Password not set"
   exit 1
 fi
 
@@ -228,7 +240,13 @@ echo "NOTE! You still need to log in to Prometheus (admin/admin) and set it up!"
 echo "#"
 echo "###"
 echo "#####"
-
+####
+# Set up grafana dashboard backup
+# (TODO: there's probably a way to do this by mounting a directory from the hard drive directly)
+####
+mkdir -p /mnt/BERTHA/etc/grafana
+cp -r ../backup-scripts /opt/
+echo "*/10 * * * * pi /opt/backup-scripts/grafana_backup.py --user $grafanaUsername --password $grafanaPassword --output-location /mnt/BERTHA/etc/grafana/dashboard" > /etc/cron.d/grafana-backup
 
 ####
 # Sync domain name
