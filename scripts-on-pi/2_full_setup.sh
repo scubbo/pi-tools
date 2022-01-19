@@ -270,12 +270,15 @@ pushd /home/pi
 git clone git@github.com:scubbo/dotfiles.git
 # Note that we do _not_ use the `setup.sh` script that exists in that repo, since that's mostly intended
 # for setting up an Amazon development laptop. But a lot of this is copied from it :)
+sudo chown -R pi dotfiles
 ln -s dotfiles/zshrc .zshrc
-# TODO - this is the Amazon-mactop-specific .local. Create a Pi-specific one!
+ln -s dotfiles/zshrc-local-pi .zshrc-local
+ln -s dotfiles/zprofile .zprofile
 ln -s dotfiles/gitignore_global .gitignore_global
 rm .gitconfig
 ln -s dotfiles/gitconfig .gitconfig
 ln -s dotfiles/vimrc .vimrc
+ln -s dotfiles/screenrc .screenrc
 ln -s dotfiles/bin bin
 popd
 
