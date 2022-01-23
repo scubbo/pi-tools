@@ -233,27 +233,16 @@ cd $curDir
 # https://grafana.com/tutorials/install-grafana-on-raspberry-pi/
 # Note - should change password
 ####
-wget -q -O - https://packages.grafana.com/gpg.key | apt-key add -
-echo "deb https://packages.grafana.com/oss/deb stable main" | tee -a /etc/apt/sources.list.d/grafana.list
-apt-get update
-apt-get install -y grafana
-/bin/systemctl enable grafana-server
-/bin/systemctl start grafana-server
-# Still need to set it up - e.g. add the Prometheus Data Source
-echo "#######"
-echo "###"
-echo "#"
-echo "NOTE! You still need to log in to Prometheus (admin/admin) and set it up!"
-echo "#"
-echo "###"
-echo "#####"
-####
-# Set up grafana dashboard backup
-# (TODO: there's probably a way to do this by mounting a directory from the hard drive directly)
-####
 mkdir -p /mnt/BERTHA/etc/grafana
-cp -r ../backup-scripts /opt/
-echo "*/10 * * * * pi /opt/backup-scripts/grafana_backup.py --user $grafanaUsername --password $grafanaPassword --output-location /mnt/BERTHA/etc/grafana/dashboard" > /etc/cron.d/grafana-backup
+if [[ $(docker ps --filter "name=grafana" | wc -l) -lt 2 ]]; then
+  docker run --name grafana \
+    -d -p 3000:3000 \
+    --net prom-network
+    -v /mnt/BERTHA/etc/grafana:/var/lib/grafana \
+    --restart always \
+    grafana/grafana-oss
+fi
+# Note - if the image is being set up from scratch, you still need to log in (admin/admin) and set it up
 
 ####
 # Sync domain name
