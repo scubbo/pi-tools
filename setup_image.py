@@ -14,6 +14,7 @@ import time
 
 from pathlib import Path
 from shutil import copyfileobj
+from string import Template
 from subprocess import Popen, PIPE
 from sys import exit # Intentional - I prefer just `exit` to `sys.exit`, but `platform` looks weird
 from tempfile import TemporaryDirectory
@@ -29,7 +30,11 @@ except ImportError:
 CHUNK_SIZE=1024
 
 
-IMAGE_DIRECTORY_URL = 'https://downloads.raspberrypi.org/raspios_lite_armhf/images/'
+BASE_IMAGE_DIRECTORY_URL = Template('https://downloads.raspberrypi.org/$type/images/')
+IMAGE_TYPES = {
+  'lite': {'image_directory': 'raspios_lite_armhf'},
+  'lite64': {'image_directory': 'raspios_lite_arm64'}
+}
 # Not worth importing BeautifulSoup just for a little bit of finding within html
 DIRECTORY_SEARCH_REGEX = '<tr>(.*?)</tr>'
 NAME_WITHIN_ROW_REGEX = '<td><a href="(.*?)">'
@@ -60,7 +65,7 @@ def _get_image_file_path(args) -> Path:
     if not image_file_path_raw:
       print('Downloading image from internet')
       with TemporaryDirectory() as temp_dir:
-        image_file_path = _download_image_file_and_return_file_path(Path(temp_dir))
+        image_file_path = _download_image_file_and_return_file_path(Path(temp_dir), args.image_type)
     else:
       image_file_path = Path(image_file_path_raw)
   if not image_file_path.exists():
@@ -70,21 +75,22 @@ def _get_image_file_path(args) -> Path:
   return image_file_path
 
 
-def _find_url_of_latest_image():
-  image_directory = requests.get(IMAGE_DIRECTORY_URL)
+def _find_url_of_latest_image(image_type: str) -> str:
+  directory_url = BASE_IMAGE_DIRECTORY_URL.substitute({'type': IMAGE_TYPES[image_type]['image_directory']})
+  image_directory = requests.get(directory_url)
   latest_image_row = re.findall(DIRECTORY_SEARCH_REGEX, image_directory.text)[-2]
   latest_image_name = re.search(NAME_WITHIN_ROW_REGEX, latest_image_row)[1]
 
-  latest_image_directory = requests.get(IMAGE_DIRECTORY_URL + latest_image_name)
+  latest_image_directory = requests.get(directory_url + latest_image_name)
   file_name = re.search(FILE_NAME_REGEX, latest_image_directory.text)[1]
-  full_url = IMAGE_DIRECTORY_URL + latest_image_name + file_name
+  full_url = directory_url + latest_image_name + file_name
   return full_url
 
-def _download_image_file_and_return_file_path(temp_dir):
-  full_url = _find_url_of_latest_image()
+def _download_image_file_and_return_file_path(temp_dir, image_type: str):
+  full_url = _find_url_of_latest_image(image_type)
   print(f'Downloading zipfile to {temp_dir}')
   path_to_zip = temp_dir.joinpath('image.zip')
-  
+
   download_request = requests.get(full_url, stream=True)
   content_length = int(download_request.headers.get('content-length'))
   # https://stackoverflow.com/a/63831344/1040915
@@ -217,6 +223,12 @@ if __name__ == '__main__':
 
   create_parser = subparsers.add_parser('create', help='Create the initial image')
   create_parser.add_argument('--image-file')
+  create_parser.add_argument('--image-type',
+                             choices = IMAGE_TYPES.keys(),
+                             default = 'lite',
+                             help='If choosing to download the image from the internet ' +\
+                             '(rather than provide it locally), select which image type to download. ' +\
+                             'Ignored if an `--image-file` is provided')
   create_parser.set_defaults(func=create)
 
   finalize_parser = subparsers.add_parser('finalize', help='Finalize a created image')
