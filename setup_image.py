@@ -225,4 +225,7 @@ if __name__ == '__main__':
   finalize_parser.set_defaults(func=finalize)
 
   args = parser.parse_args()
+  if 'func' not in args.__dict__:
+    print(f'Usage: `sudo ./setup_image.py {[key for key in subparsers.choices.keys()]} <options>')
+    exit(1)
   args.func(args)
