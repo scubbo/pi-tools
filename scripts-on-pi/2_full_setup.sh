@@ -13,6 +13,7 @@ do
         h) hostname=${OPTARG};;
         gu) grafanaUsername=${OPTARG};;
         gp) grafanaPassword=${OPTARG};;
+        sp) sambdaPassword=${OPTARG};;
     esac
 done
 
@@ -28,6 +29,11 @@ fi
 
 if [ -z "$grafanaPassword" ]; then
   echo "Grafana Password not set"
+  exit 1
+fi
+
+if [ -z "$sambaPassword" ]; then
+  echo "Samba Password not set"
   exit 1
 fi
 
@@ -139,16 +145,17 @@ if [[ $(docker ps --filter "name=jellyfin" | wc -l) -lt 2 ]]; then
 fi
 
 ####
-# Set up NFS share
-# https://pimylifeup.com/raspberry-pi-nfs/
+# Set up Samba share
+# https://pimylifeup.com/raspberry-pi-samba/
 #
-# Currently disabled since not needed (and NFS doesn't work on FAT drives),
-# but commited into source control just in case
+# (NFS doesn't work on FAT drives)
 ####
-# apt-get install nfs-kernel-server -y
-# mkdir -p /mnt/BERTHA/nfsShare
-# echo "/mnt/BERTHA/nfsShare 192.168.42.0/24(rw,all_squash,insecure,async,no_subtree_check,anonuid=$(id -u pi),anongid=$(id -g pi))" >> /etc/exports
-# exportfs -ra
+apt-get install -y samba samba-common-bin
+mkdir -p /mnt/BERTHA/share
+echo -e "\n[berthashare]\npath = /mnt/BERTHA/share\nwriteable=Yes\ncreate mask=0777\ndirectory mask=0777\npublic=no\n" | sudo tee -a /etc/samba/smb.conf > /dev/null
+useradd sambpi # The link above neglects to mention this! (Because they reuse the existing `pi` user)
+yes "$sambaPassword" | head -n 2 | smbpasswd -s -a sambpi
+systemctl restart smbd
 
 
 # TODO: Pull RC files
