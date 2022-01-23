@@ -7,6 +7,7 @@ import hashlib
 import os
 import re
 import requests
+import select
 import signal
 import sys
 import time
@@ -164,24 +165,30 @@ def _write_image_to_disk(image_file_path: Path, disk_number: int):
 
   # https://gist.github.com/hikoz/741643, though needed some tweaking for Python3
   dd = Popen(['dd', 'bs=1m', f'if={image_file_path.absolute()}', f'of=/dev/rdisk{disk_number}'], stderr=PIPE)
+  # https://stackoverflow.com/a/10759061/1040915
+  poll_obj = select.poll()
+  poll_obj.register(dd.stderr, select.POLLIN)
   try:
     while dd.poll() is None:
       time.sleep(.3)
       # Note - `SIGUSR1` if not on Mac
       dd.send_signal(signal.SIGINFO)
-      while True:
+      poll_result = poll_obj.poll(2000)
+      if poll_result:
         l = dd.stderr.readline().decode('ascii')
         if 'records in' in l:
           print(f'{l[:l.index("+")]} records, ', end='')
         if 'bytes' in l:
           print(f'{l.strip()}\r', end='')
-          break
-        # TODO - seems to get stuck here? Put in a timeout or something?
+      else:
+        # No poll result
+        break
+    else:
+      print(f'Image-write complete')
   except KeyboardInterrupt:
     # I don't _think_ this is necessary, but better safe than sorry!
     dd.kill()
     raise
-  print(dd.stderr.read(), end='')
   # Move this to finalize
   # Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number}'])
   # print('Finished writing, disk ejected')
