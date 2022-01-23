@@ -202,7 +202,7 @@ country=US
 
 network={{
     ssid="{args.ssid}"
-    psk="{_wpa_passphrase(args.ssid, args.wifi_password)}"
+    psk={_wpa_passphrase(args.ssid, args.wifi_password)}
     key_mgmt=WPA-PSK
 }}
 ''')
