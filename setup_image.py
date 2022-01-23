@@ -189,13 +189,11 @@ def _write_image_to_disk(image_file_path: Path, disk_number: int):
     # I don't _think_ this is necessary, but better safe than sorry!
     dd.kill()
     raise
-  # Move this to finalize
-  # Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number}'])
-  # print('Finished writing, disk ejected')
 
 
 def finalize(args):
   # TODO - set hostname: https://techexplorations.com/guides/rpi/begin/raspberry-pi-hostname/
+  disk_number_and_info = _find_disk_number_and_info()
   Path('/Volumes/boot/ssh').touch()
   with open('/Volumes/boot/wpa_supplicant.conf', 'w') as f:
     f.write(f'''ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -208,6 +206,11 @@ network={{
     key_mgmt=WPA-PSK
 }}
 ''')
+  # Note it is intentional that there are no quotes around psk
+  Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number_and_info[0]}'])
+  sleep(1)
+  print('Finished writing, disk ejected')
+
 
 # https://stackoverflow.com/questions/46502224/python-wpa-passphrase-linux-binary-implementation-generates-only-part-of-the-p
 def _wpa_passphrase(ssid, pswd):
