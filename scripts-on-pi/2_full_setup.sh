@@ -255,7 +255,7 @@ fi
 # Sync domain name
 ####
 echo "Also note the updateDNS will not work unless you sync AWS credentials to this PI"
-echo "10 * * * * $baseDir/../updateDNS.py --profile personal --dns-name scubbo.org" > /etc/cron.d/updateDNS
+echo "*/10 * * * * $baseDir/../updateDNS.py --profile personal --dns-name scubbo.org" > /etc/cron.d/updateDNS
 
 ####
 # Install PiVPN
@@ -272,7 +272,7 @@ echo "PiVPN installed (remember to open the appropriate Firewall port and add cl
 # TODO - probably need to source this somehow, cannot assume it will be present in ha_backups?
 ####
 pushd /mnt/BERTHA/ha_backups && screen -d -m ./hass-backup-sync-server.py && popd
-echo "10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
+echo "*/10 * * * * /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
 
 ####
 # Update vim
