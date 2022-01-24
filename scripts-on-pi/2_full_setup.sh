@@ -130,7 +130,9 @@ if [ -z "$berthaDev" ] || [ -z "$berthaUUID" ]; then
   echo "One of the bertha-variables is empty. Exiting (do you have the Hard Drive plugged in?"
   exit 1
 fi
-echo "UUID=$berthaUUID /mnt/BERTHA exfat defaults,auto,users,rw,nofail,umask=000 0 0" >> /etc/fstab
+if [[ $(grep '/mnt/BERTHA' /etc/fstab | wc -l) -lt 1 ]]; then
+  echo "UUID=$berthaUUID /mnt/BERTHA exfat defaults,auto,users,rw,nofail,exec,umask=000 0 0" >> /etc/fstab
+fi
 mount -a
 
 ####
