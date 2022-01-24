@@ -37,6 +37,13 @@ if [ -z "$sambaPassword" ]; then
   exit 1
 fi
 
+####
+# Install Postfix so that Cron logs won't be discarded
+# TODO: actual mail-out ability
+####
+debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Local only'"
+DEBIAN_FRONTEND=noninteractive apt-get install -y postfix
+
 # Capture baseDir so that we can refer back to it later for e.g. configuration files, even after `cd`-ing around
 baseDir=$(pwd)
 if [ -z $(ls $baseDir | grep "2_full_setup.sh") ]; then
