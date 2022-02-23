@@ -254,12 +254,6 @@ fi
 # Note - if the image is being set up from scratch, you still need to log in (admin/admin) and set it up
 
 ####
-# Sync domain name
-####
-echo "Also note the updateDNS will not work unless you sync AWS credentials to this PI"
-echo "*/10 * * * * pi $baseDir/../updateDNS.py --profile personal --dns-name scubbo.org" > /etc/cron.d/updateDNS
-
-####
 # Install PiVPN
 ####
 curl -L https://install.pivpn.io > install.sh
