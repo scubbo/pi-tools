@@ -61,10 +61,23 @@ perl -i'' -pe "s/raspberrypi/$hostname/" /etc/hosts
 echo $hostname > /etc/hostname
 
 ####
-# Install Bonjour
-# https://www.howtogeek.com/167190/how-and-why-to-assign-the-.local-domain-to-your-raspberry-pi/
+# Do all the apt-gets at once - more efficient that way!
+# (Except postfix, because that has some unusual syntax)
 ####
-apt-get install avahi-daemon
+apt-get install -y \
+  # Install Bonjour
+  # https://www.howtogeek.com/167190/how-and-why-to-assign-the-.local-domain-to-your-raspberry-pi/
+  avahi-daemon \
+  # pip (prerequisite for docker-compose)
+  python3-distutils python3-apt python3-pip
+  # More docker-compose prereqs
+  libffi-dev libssl-dev \
+  # Samba Share
+  # https://pimylifeup.com/raspberry-pi-samba/
+  samba samba-common-bin \
+  # Update vim
+  vim-gui-common vim-runtime \
+  zsh
 
 
 command_exists() {
@@ -94,12 +107,6 @@ fi
 
 
 ####
-# Install pip (prerequisite for docker-compose)
-####
-apt-get install -y python3-distutils python3-apt python3-pip
-# curl -s https://bootstrap.pypa.io/get-pip.py | python3
-
-####
 # Install boto3
 ####
 pip3 install boto3
@@ -108,7 +115,6 @@ pip3 install boto3
 # Install docker-compose
 # https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
 ####
-apt-get install libffi-dev libssl-dev
 apt install python3-dev
 pip3 install docker-compose
 # Note - still not part of $PATH. Update to bashrc?
@@ -159,7 +165,6 @@ fi
 #
 # (NFS doesn't work on FAT drives)
 ####
-apt-get install -y samba samba-common-bin
 mkdir -p /mnt/BERTHA/share
 echo -e "\n[berthashare]\npath = /mnt/BERTHA/share\nwriteable=Yes\ncreate mask=0777\ndirectory mask=0777\npublic=no\n" | sudo tee -a /etc/samba/smb.conf > /dev/null
 useradd sambpi # The link above neglects to mention this! (Because they reuse the existing `pi` user)
@@ -271,14 +276,8 @@ pushd /mnt/BERTHA/ha_backups && screen -d -m ./hass-backup-sync-server.py && pop
 echo "*/10 * * * * pi /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
 
 ####
-# Update vim
+# Make zsh the default shell
 ####
-apt-get install vim-gui-common vim-runtime -y
-
-####
-# Install zsh, and make it the default shell
-####
-apt-get install zsh -y
 usermod --shell /bin/zsh pi
 
 ####
