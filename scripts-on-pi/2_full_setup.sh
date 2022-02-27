@@ -261,7 +261,7 @@ fi
 ####
 # Install PiVPN
 ####
-curl -L https://install.pivpn.io > install.sh
+curl -sL https://install.pivpn.io > install.sh
 chmod +x install.sh
 # TODO - shouldn't rely on relative directories for config - instead, save a location
 ./install.sh --unattended ../config/pi-vpn-options.conf
