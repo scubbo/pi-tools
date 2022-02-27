@@ -69,7 +69,7 @@ apt-get install -y \
   # https://www.howtogeek.com/167190/how-and-why-to-assign-the-.local-domain-to-your-raspberry-pi/
   avahi-daemon \
   # pip (prerequisite for docker-compose)
-  python3-distutils python3-apt python3-pip
+  python3-distutils python3-apt python3-pip python3-venv
   # More docker-compose prereqs
   libffi-dev libssl-dev \
   # Samba Share
