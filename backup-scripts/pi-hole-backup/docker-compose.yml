@@ -4,6 +4,11 @@ services:
   main:
     build:
       context: .
+    secrets:
+      - user_ssh_key
     volumes:
       - /mnt/BERTHA/pi-holeBackups:/host_system_dir
-      - /home/pi/.ssh:/root/.ssh
+secrets:
+  user_ssh_key:
+    file: ~/.ssh/id_rsa
+
