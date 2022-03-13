@@ -1,3 +1,5 @@
+#!/bin/sh
+
 while true; do
   echo "Waking up to copy pi-hole backups"
   ssh -i /run/secrets/user_ssh_key -o StrictHostKeyChecking=no pi@192.168.42.74 "pihole -a -t";
