@@ -252,8 +252,9 @@ mkdir -p /mnt/BERTHA/etc/grafana
 if [[ $(docker ps --filter "name=grafana" | wc -l) -lt 2 ]]; then
   docker run --name grafana \
     -d -p 3000:3000 \
-    --net prom-network
+    --net prom-network \
     -v /mnt/BERTHA/etc/grafana:/var/lib/grafana \
+    -v /mnt/BERTHA/etc/grafana.ini:/etc/grafana/grafana.ini \
     --restart always \
     grafana/grafana-oss
 fi
