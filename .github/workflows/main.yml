@@ -37,8 +37,8 @@ jobs:
           image: tonistiigi/binfmt:latest
           platforms: all
 
-      - name: Build and push
-        id: docker_build
+      - name: Build and push Pihole backup
+        id: docker_build_pihole_backup
         uses: docker/build-push-action@v2
         with:
           context: backup-scripts/pi-hole-backup/
@@ -46,4 +46,14 @@ jobs:
           platforms: linux/arm/v7
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/pi-hole-backup:latest
+
+      - name: Build and push Hass backup-scripts
+        id: docker_build_hass_backup
+        uses: docker/build-push-action@v2
+        with:
+          context: backup-scripts/hass-backup/
+          file: backup-scripts/hass-backup/Dockerfile
+          platforms: linux/arm/v7
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/hass-backup:latest
 
