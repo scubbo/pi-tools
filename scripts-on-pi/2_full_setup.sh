@@ -270,12 +270,15 @@ chmod +x install.sh
 rm install.sh
 echo "PiVPN installed (remember to open the appropriate Firewall port and add clients!)"
 
-####
-# Run the sync-server
-# TODO - probably need to source this somehow, cannot assume it will be present in ha_backups?
-####
-pushd /mnt/BERTHA/ha_backups && screen -d -m ./hass-backup-sync-server.py && popd
-echo "*/10 * * * * pi /mnt/BERTHA/ha_backups/hass-backup-sync-client.py sync-backup port=25 key_name=hassio_internal_key" > /etc/cron.d/hass-client-backup
+# Note - *this will fail*, because it doesn't have the secrets provided by the docker-compose.yml.
+# Talk to Eamon about how to fix this (probably, Docker Swarm/k8s)
+docker run --name hass-backup \
+  -d \
+  -v /var/run/dbus:/var/run/dbus \
+  -v /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket \
+  -v /mnt/BERTHA/ha_backups:/host_system_dir \
+  --restart always \
+  scubbo/hass-backup \
 
 ####
 # Make zsh the default shell

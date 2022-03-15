@@ -1,7 +1,7 @@
 FROM alpine:3.14
 
-COPY . .
+RUN apk add avahi-tools openssh-client
 
-RUN apk add --update openssh-client
+COPY . .
 
 CMD ["./run.sh"]
