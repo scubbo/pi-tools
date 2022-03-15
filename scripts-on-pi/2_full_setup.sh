@@ -229,16 +229,17 @@ fi
 # Install and run Prometheus Exporter
 # Note - intentionally run as a standalone process, not a Docker container. Think about it... :)
 ####
-curDir=$(pwd)
 latestExporterVersion=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases | jq -r '.[] | .tag_name' | grep -v -E 'rc.?[[:digit:]]$' | perl -pe 's/^v//' | sort -V | tail -n 1)
 wget -q -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${latestExporterVersion}/node_exporter-${latestExporterVersion}.linux-armv7.tar.gz
-mv /tmp/node_exporter.tar.gz /opt
-cd /opt
 tar xvfz node_exporter.tar.gz
 rm node_exporter.tar.gz
-cd node_exporter-${latestExporterVersion}.linux-armv7
-screen -d -m ./node_exporter
-cd $curDir
+mv node_exporter-${latestExporterVersion}.linux-armv7/node_exporter /usr/local/bin
+# https://devopscube.com/monitor-linux-servers-prometheus-node-exporter/
+sudo useradd -rs /bin/false node_exporter
+sudo cp ../service-files/node_exporter.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl start node_exporter
+systemctl enable node_exporter
 
 ####
 # Install Grafana
