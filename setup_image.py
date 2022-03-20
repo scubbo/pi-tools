@@ -208,7 +208,7 @@ network={{
 ''')
   # Note it is intentional that there are no quotes around psk
   Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number_and_info[0]}'])
-  sleep(1)
+  time.sleep(1)
   print('Finished writing, disk ejected')
 
 
