@@ -1,7 +1,7 @@
 # https://raspberrypi.stackexchange.com/a/66939/118884
 1. `sudo raspi-config nonint do_expand_rootfs`
 2. Change password (`$ passwd`)
-3. `sudo apt-get instal -y git`
+3. `sudo apt-get install -y git`
 4. Run `sudo raspi-config`, and set up locale (TODO: find a way to do this automatically)
 5. Add ssh key to Github:
    * Run `ssh-keygen -t ed25519 -C "<email>"`
