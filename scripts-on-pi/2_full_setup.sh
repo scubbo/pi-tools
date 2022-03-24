@@ -7,13 +7,12 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-while getopts h: flag
+while getopts h:u:p: flag
 do
     case "${flag}" in
         h) hostname=${OPTARG};;
-        gu) grafanaUsername=${OPTARG};;
-        gp) grafanaPassword=${OPTARG};;
-        sp) sambdaPassword=${OPTARG};;
+        u) grafanaUsername=${OPTARG};;
+        p) grafanaPassword=${OPTARG};;
     esac
 done
 
@@ -63,19 +62,13 @@ echo $hostname > /etc/hostname
 ####
 # Do all the apt-gets at once - more efficient that way!
 # (Except postfix, because that has some unusual syntax)
+# https://www.howtogeek.com/167190/how-and-why-to-assign-the-.local-domain-to-your-raspberry-pi/
 ####
 apt-get install -y \
-  # Install Bonjour
-  # https://www.howtogeek.com/167190/how-and-why-to-assign-the-.local-domain-to-your-raspberry-pi/
   avahi-daemon \
-  # pip (prerequisite for docker-compose)
-  python3-distutils python3-apt python3-pip python3-venv
-  # More docker-compose prereqs
+  python3-distutils python3-apt python3-pip python3-venv \
   libffi-dev libssl-dev \
-  # Samba Share
-  # https://pimylifeup.com/raspberry-pi-samba/
   samba samba-common-bin \
-  # Update vim
   vim-gui-common vim-runtime \
   zsh
 
@@ -115,7 +108,7 @@ pip3 install boto3
 # Install docker-compose
 # https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
 ####
-apt install python3-dev
+apt -y install python3-dev
 pip3 install docker-compose
 # Note - still not part of $PATH. Update to bashrc?
 
@@ -123,7 +116,7 @@ pip3 install docker-compose
 # Set docker containers to auto-restart
 # https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
 ####
-sudo systemctl enable docker
+systemctl enable docker
 
 ####
 # Mount BERTHA
@@ -158,18 +151,6 @@ if [[ $(docker ps --filter "name=jellyfin" | wc -l) -lt 2 ]]; then
     --restart always \
     jellyfin/jellyfin:latest
 fi
-
-####
-# Set up Samba share
-# https://pimylifeup.com/raspberry-pi-samba/
-#
-# (NFS doesn't work on FAT drives)
-####
-mkdir -p /mnt/BERTHA/share
-echo -e "\n[berthashare]\npath = /mnt/BERTHA/share\nwriteable=Yes\ncreate mask=0777\ndirectory mask=0777\npublic=no\n" | sudo tee -a /etc/samba/smb.conf > /dev/null
-useradd sambpi # The link above neglects to mention this! (Because they reuse the existing `pi` user)
-yes "$sambaPassword" | head -n 2 | smbpasswd -s -a sambpi
-systemctl restart smbd
 
 
 # TODO: Pull RC files
@@ -231,8 +212,8 @@ fi
 ####
 latestExporterVersion=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases | jq -r '.[] | .tag_name' | grep -v -E 'rc.?[[:digit:]]$' | perl -pe 's/^v//' | sort -V | tail -n 1)
 wget -q -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${latestExporterVersion}/node_exporter-${latestExporterVersion}.linux-armv7.tar.gz
-tar xvfz node_exporter.tar.gz
-rm node_exporter.tar.gz
+tar xvfz /tmp/node_exporter.tar.gz
+rm /tmpnode_exporter.tar.gz
 mv node_exporter-${latestExporterVersion}.linux-armv7/node_exporter /usr/local/bin
 # https://devopscube.com/monitor-linux-servers-prometheus-node-exporter/
 sudo useradd -rs /bin/false node_exporter
@@ -272,13 +253,14 @@ echo "PiVPN installed (remember to open the appropriate Firewall port and add cl
 
 # Note - *this will fail*, because it doesn't have the secrets provided by the docker-compose.yml.
 # Talk to Eamon about how to fix this (probably, Docker Swarm/k8s)
-docker run --name hass-backup \
-  -d \
-  -v /var/run/dbus:/var/run/dbus \
-  -v /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket \
-  -v /mnt/BERTHA/ha_backups:/host_system_dir \
-  --restart always \
-  scubbo/hass-backup \
+# Commenting this out because I suspect it's what brought down the Pi most-recently :shrug:
+# docker run --name hass-backup \
+#   -d \
+#   -v /var/run/dbus:/var/run/dbus \
+#   -v /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket \
+#   -v /mnt/BERTHA/ha_backups:/host_system_dir \
+#   --restart always \
+#   scubbo/hass-backup \
 
 ####
 # Make zsh the default shell
@@ -289,6 +271,7 @@ usermod --shell /bin/zsh pi
 # Install dotfiles
 ####
 pushd /home/pi
+# TODO - this might fail because `sudo` operates with different ssh keys than main user?
 git clone git@github.com:scubbo/dotfiles.git
 # Note that we do _not_ use the `setup.sh` script that exists in that repo, since that's mostly intended
 # for setting up an Amazon development laptop. But a lot of this is copied from it :)
@@ -297,7 +280,7 @@ ln -s dotfiles/zshrc .zshrc
 ln -s dotfiles/zshrc-local-pi .zshrc-local
 ln -s dotfiles/zprofile .zprofile
 ln -s dotfiles/gitignore_global .gitignore_global
-rm .gitconfig
+rm -f .gitconfig
 ln -s dotfiles/gitconfig .gitconfig
 ln -s dotfiles/vimrc .vimrc
 ln -s dotfiles/screenrc .screenrc
