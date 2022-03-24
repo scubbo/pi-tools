@@ -72,6 +72,8 @@ apt-get install -y \
   vim-gui-common vim-runtime \
   zsh
 
+apt install -y fail2ban
+
 
 command_exists() {
   command -v "$@" > /dev/null 2>&1
@@ -261,6 +263,14 @@ echo "PiVPN installed (remember to open the appropriate Firewall port and add cl
 #   -v /mnt/BERTHA/ha_backups:/host_system_dir \
 #   --restart always \
 #   scubbo/hass-backup \
+
+####
+# Configure fail2ban
+# (note - already installed with `apt install`, above)
+# https://pimylifeup.com/raspberry-pi-fail2ban/
+####
+ln -s /mnt/BERTHA/etc/fail2ban/jail.local /etc/fail2ban/jail.local
+service fail2ban restart
 
 ####
 # Make zsh the default shell
