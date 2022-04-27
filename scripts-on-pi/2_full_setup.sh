@@ -11,28 +11,11 @@ while getopts h:u:p: flag
 do
     case "${flag}" in
         h) hostname=${OPTARG};;
-        u) grafanaUsername=${OPTARG};;
-        p) grafanaPassword=${OPTARG};;
     esac
 done
 
 if [ -z "$hostname" ]; then
   echo "Hostname not set"
-  exit 1
-fi
-
-if [ -z "$grafanaUsername" ]; then
-  echo "Grafana Username not set"
-  exit 1
-fi
-
-if [ -z "$grafanaPassword" ]; then
-  echo "Grafana Password not set"
-  exit 1
-fi
-
-if [ -z "$sambaPassword" ]; then
-  echo "Samba Password not set"
   exit 1
 fi
 
@@ -68,7 +51,8 @@ apt-get install -y \
   avahi-daemon \
   python3-distutils python3-apt python3-pip python3-venv \
   libffi-dev libssl-dev \
-  samba samba-common-bin \
+  # commented out because a) we're not using Samba currently, and b) the install is interactive
+  #samba samba-common-bin \
   vim-gui-common vim-runtime \
   zsh
 
@@ -215,8 +199,9 @@ fi
 latestExporterVersion=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases | jq -r '.[] | .tag_name' | grep -v -E 'rc.?[[:digit:]]$' | perl -pe 's/^v//' | sort -V | tail -n 1)
 wget -q -O /tmp/node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${latestExporterVersion}/node_exporter-${latestExporterVersion}.linux-armv7.tar.gz
 tar xvfz /tmp/node_exporter.tar.gz
-rm /tmpnode_exporter.tar.gz
+rm /tmp/node_exporter.tar.gz
 mv node_exporter-${latestExporterVersion}.linux-armv7/node_exporter /usr/local/bin
+rm -rf node_exporter-${latestExporterVersion}.linux-armv7
 # https://devopscube.com/monitor-linux-servers-prometheus-node-exporter/
 sudo useradd -rs /bin/false node_exporter
 sudo cp ../service-files/node_exporter.service /etc/systemd/system/
@@ -281,8 +266,8 @@ usermod --shell /bin/zsh pi
 # Install dotfiles
 ####
 pushd /home/pi
-# TODO - this might fail because `sudo` operates with different ssh keys than main user?
-git clone git@github.com:scubbo/dotfiles.git
+# https://ma.ttias.be/specify-a-specific-ssh-private-key-for-git-pull-git-clone/
+GIT_SSH_COMMAND='ssh -i /home/pi/.ssh/id_ed25519' git clone git@github.com:scubbo/dotfiles.git
 # Note that we do _not_ use the `setup.sh` script that exists in that repo, since that's mostly intended
 # for setting up an Amazon development laptop. But a lot of this is copied from it :)
 sudo chown -R pi dotfiles
