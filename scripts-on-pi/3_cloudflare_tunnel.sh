@@ -17,7 +17,7 @@ wget -O /usr/bin/cloudflared \
   https://github.com/cloudflare/cloudflared/releases/download/$latestVersion/cloudflared-linux-arm
 chmod +x /usr/bin/cloudflared
 /usr/bin/cloudflared login # There is some interactivity here!
-mv /home/pi/.cloudflared/cert.pem /home/cloudflared_tunnel/.cloudflared
+mv /root/.cloudflared/cert.pem /home/cloudflared_tunnel/.cloudflared
 chown cloudflared_tunnel /home/cloudflared_tunnel/.cloudflared/cert.pem
 chgrp cloudflared_tunnel /home/cloudflared_tunnel/.cloudflared/cert.pem
 
