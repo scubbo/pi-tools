@@ -282,3 +282,9 @@ ln -s dotfiles/screenrc .screenrc
 ln -s dotfiles/bin bin
 popd
 
+####
+# Install Hugo
+####
+latestHugoVersion=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases | jq -r '.[] | .tag_name' | perl -pe 's/^v//' | sort -V | tail -n 1)
+wget -q -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${latestHugoVersion}/hugo_${latestHugoVersion}_Linux-ARM.deb
+sudo apt install /tmp/hugo.deb
