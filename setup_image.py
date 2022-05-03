@@ -193,20 +193,28 @@ def _write_image_to_disk(image_file_path: Path, disk_number: int):
 
 
 def finalize(args):
+  if args.no_wifi:
+    print('no-wifi flag set - not setting up wifi')
+  else:
+    if not args.ssid or not args.wifi_password:
+      print('If `no-wifi` is not set, you must provide `ssid` and `wifi-password`')
+      exit(1)
+
   # TODO - set hostname: https://techexplorations.com/guides/rpi/begin/raspberry-pi-hostname/
   disk_number_and_info = _find_disk_number_and_info()
   Path('/Volumes/boot/ssh').touch()
-  with open('/Volumes/boot/wpa_supplicant.conf', 'w') as f:
-    f.write(f'''ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-country=US
+  if not args.no_wifi:
+    with open('/Volumes/boot/wpa_supplicant.conf', 'w') as f:
+      f.write(f'''ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+  update_config=1
+  country=US
 
-network={{
-    ssid="{args.ssid}"
-    psk={_wpa_passphrase(args.ssid, args.wifi_password)}
-    key_mgmt=WPA-PSK
-}}
-''')
+  network={{
+      ssid="{args.ssid}"
+      psk={_wpa_passphrase(args.ssid, args.wifi_password)}
+      key_mgmt=WPA-PSK
+  }}
+  ''')
   # Note it is intentional that there are no quotes around psk
   Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number_and_info[0]}'])
   time.sleep(1)
@@ -243,8 +251,9 @@ if __name__ == '__main__':
   create_parser.set_defaults(func=create)
 
   finalize_parser = subparsers.add_parser('finalize', help='Finalize a created image')
-  finalize_parser.add_argument('--ssid', required=True)
-  finalize_parser.add_argument('--wifi-password', required=True)
+  finalize_parser.add_argument('--ssid')
+  finalize_parser.add_argument('--wifi-password')
+  finalize_parser.add_argument('--no-wifi', action='store_true', default=False)
   finalize_parser.set_defaults(func=finalize)
 
   args = parser.parse_args()
