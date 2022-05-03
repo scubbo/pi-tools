@@ -10,6 +10,7 @@ import requests
 import select
 import signal
 import sys
+import tarfile
 import time
 
 
@@ -39,7 +40,7 @@ IMAGE_TYPES = {
 # Not worth importing BeautifulSoup just for a little bit of finding within html
 DIRECTORY_SEARCH_REGEX = '<tr>(.*?)</tr>'
 NAME_WITHIN_ROW_REGEX = '<td><a href="(.*?)">'
-FILE_NAME_REGEX = '<td><a href="(.*?\.zip)">'
+FILE_NAME_REGEX = '<td><a href="(.*?\.xz)">'
 # Regex for a different purpose - for parsing `diskutil list`
 DISK_NUMBER_REGEX = '/dev/disk(\d).*'
 
@@ -89,28 +90,28 @@ def _find_url_of_latest_image(image_type: str) -> str:
 
 def _download_image_file_and_return_file_path(temp_dir, image_type: str):
   full_url = _find_url_of_latest_image(image_type)
-  print(f'Downloading zipfile to {temp_dir}')
-  path_to_zip = temp_dir.joinpath('image.zip')
+  print(f'Downloading tarfile from {full_url} to {temp_dir}')
+  path_to_tar = temp_dir.joinpath('image.xz')
 
   download_request = requests.get(full_url, stream=True)
   content_length = int(download_request.headers.get('content-length'))
   # https://stackoverflow.com/a/63831344/1040915
   download_request.raw.read = functools.partial(download_request.raw.read, decode_content=True)
   with tqdm.wrapattr(download_request.raw, "read", total=content_length) as tq:
-    with open(path_to_zip, 'wb') as f:
+    with open(path_to_tar, 'wb') as f:
       copyfileobj(tq, f)
 
-  print(f'Finished downloading zip to {path_to_zip}')
+  print(f'Finished downloading tarfile to {path_to_tar}')
   extract_location = Path.home().joinpath('raspi_image')
   extract_location.mkdir(exist_ok=True)
-  # TODO - check for existing data there
-  # (though, if there is - do _not_ error out, but just extract to different name!
-  # TempDir will disappear upon termination!)
-  with ZipFile(path_to_zip) as zf:
-    zf.extractall(extract_location)
+  # This still isn't working - getting a "bad checksum" error,
+  # even though Mac can extract the archive with no problems.
+  # `tar -xzf <file>` also fails. Curious...
+  with tarfile.open(path_to_tar, mode='r:xz') as tf:
+    tf.extractall(extract_location)
 
-  path_to_zip.unlink()
-  print(f'Unzipped zip to {extract_location}')
+  path_to_tar.unlink()
+  print(f'Unzipped tarfile to {extract_location}')
 
   for extracted in extract_location.iterdir():
     if extracted.suffix == '.img':
