@@ -215,6 +215,12 @@ def finalize(args):
       key_mgmt=WPA-PSK
   }}
   ''')
+
+  # Raspberry Pi OS no longer sets `raspberry` as the default password
+  # https://www.raspberrypi.com/news/raspberry-pi-bullseye-update-april-2022/
+  print('You need to implement password creation')
+  exit(1)
+
   # Note it is intentional that there are no quotes around psk
   Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number_and_info[0]}'])
   time.sleep(1)
@@ -254,6 +260,7 @@ if __name__ == '__main__':
   finalize_parser.add_argument('--ssid')
   finalize_parser.add_argument('--wifi-password')
   finalize_parser.add_argument('--no-wifi', action='store_true', default=False)
+  finalize_parser.add_argument('--password', required=True)
   finalize_parser.set_defaults(func=finalize)
 
   args = parser.parse_args()

@@ -51,10 +51,10 @@ apt-get install -y \
   avahi-daemon \
   python3-distutils python3-apt python3-pip python3-venv \
   libffi-dev libssl-dev \
-  # commented out because a) we're not using Samba currently, and b) the install is interactive
-  #samba samba-common-bin \
   vim-gui-common vim-runtime \
   zsh
+# commented out because a) we're not using Samba currently, and b) the install is interactive
+#samba samba-common-bin \
 
 apt install -y fail2ban
 
@@ -267,7 +267,7 @@ usermod --shell /bin/zsh pi
 ####
 pushd /home/pi
 # https://ma.ttias.be/specify-a-specific-ssh-private-key-for-git-pull-git-clone/
-GIT_SSH_COMMAND='ssh -i /home/pi/.ssh/id_ed25519' git clone git@github.com:scubbo/dotfiles.git
+GIT_SSH_COMMAND='ssh -i /home/pi/.ssh/id_ed25519 -o StrictHostKeyChecking=no' git clone git@github.com:scubbo/dotfiles.git
 # Note that we do _not_ use the `setup.sh` script that exists in that repo, since that's mostly intended
 # for setting up an Amazon development laptop. But a lot of this is copied from it :)
 sudo chown -R pi dotfiles
