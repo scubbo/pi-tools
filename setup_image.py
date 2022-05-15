@@ -2,8 +2,10 @@
 
 import argparse
 import binascii
+import datetime
 import functools
 import hashlib
+import lzma
 import os
 import re
 import requests
@@ -90,38 +92,30 @@ def _find_url_of_latest_image(image_type: str) -> str:
 
 def _download_image_file_and_return_file_path(temp_dir, image_type: str):
   full_url = _find_url_of_latest_image(image_type)
-  print(f'Downloading tarfile from {full_url} to {temp_dir}')
-  path_to_tar = temp_dir.joinpath('image.xz')
+  print(f'Downloading LZMAFile from {full_url} to {temp_dir}')
+  path_to_lzma = temp_dir.joinpath('image.xz')
 
   download_request = requests.get(full_url, stream=True)
   content_length = int(download_request.headers.get('content-length'))
   # https://stackoverflow.com/a/63831344/1040915
   download_request.raw.read = functools.partial(download_request.raw.read, decode_content=True)
   with tqdm.wrapattr(download_request.raw, "read", total=content_length) as tq:
-    with open(path_to_tar, 'wb') as f:
+    with open(path_to_lzma, 'wb') as f:
       copyfileobj(tq, f)
 
-  print(f'Finished downloading tarfile to {path_to_tar}')
-  extract_location = Path.home().joinpath('raspi_image')
-  extract_location.mkdir(exist_ok=True)
-  # This still isn't working - getting a "bad checksum" error,
-  # even though Mac can extract the archive with no problems.
-  # `tar -xzf <file>` also fails. Curious...
-  with tarfile.open(path_to_tar, mode='r:xz') as tf:
-    tf.extractall(extract_location)
+  print(f'Finished downloading LZMAFile to {path_to_lzma}')
+  extract_dir = Path.home().joinpath('raspi_image')
+  extract_dir.mkdir(exist_ok=True)
+  extract_location = extract_dir.joinpath(str(int(datetime.datetime.now().timestamp())))
+  # https://stackoverflow.com/a/72206813/1040915 - thanks, SO!
+  with lzma.open(path_to_lzma) as f_in:
+    with open(extract_location, 'wb') as f_out:
+      f_out.write(f_in.read())
 
-  path_to_tar.unlink()
-  print(f'Unzipped tarfile to {extract_location}')
+  path_to_lzma.unlink()
+  print(f'Extracted LZMAFile to {extract_location}')
 
-  for extracted in extract_location.iterdir():
-    if extracted.suffix == '.img':
-      image_file_path = extracted
-      break
-  else:
-    print(f'Found no image file in {extract_location}')
-    exit(1)
-
-  return image_file_path
+  return extract_location
 
 def _find_disk_number_and_info():
   # This script is only tested on Mac - can't guarantee it will work elsewhere.
