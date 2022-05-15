@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 from shutil import copyfileobj
 from string import Template
-from subprocess import Popen, PIPE
+from subprocess import check_output, Popen, PIPE
 from sys import exit # Intentional - I prefer just `exit` to `sys.exit`, but `platform` looks weird
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
@@ -209,13 +209,18 @@ def finalize(args):
       key_mgmt=WPA-PSK
   }}
   ''')
+  # Note it is intentional that there are no quotes around psk
 
   # Raspberry Pi OS no longer sets `raspberry` as the default password
   # https://www.raspberrypi.com/news/raspberry-pi-bullseye-update-april-2022/
-  print('You need to implement password creation')
-  exit(1)
+  #
+  # Note the below required OpenSSL version >=1.1 -
+  # https://ubuntu101.co.za/osx-and-macos/homebrew-missing-sha512sum-sha256sum-macos/
+  encoded_password = check_output(['openssl', 'passwd', '-6', args.password], encoding='UTF-8').strip()
+  with open('/Volumes/boot/userconf', 'w') as f:
+    f.write(f'pi:{encoded_password}')
+  print('Wrote encoded password to disk')
 
-  # Note it is intentional that there are no quotes around psk
   Popen(['diskutil', 'eject', f'/dev/rdisk{disk_number_and_info[0]}'])
   time.sleep(1)
   print('Finished writing, disk ejected')
