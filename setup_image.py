@@ -249,7 +249,7 @@ if __name__ == '__main__':
   create_parser.add_argument('--image-file')
   create_parser.add_argument('--image-type',
                              choices = IMAGE_TYPES.keys(),
-                             default = 'lite',
+                             default = 'lite64',
                              help='If choosing to download the image from the internet ' +\
                              '(rather than provide it locally), select which image type to download. ' +\
                              'Ignored if an `--image-file` is provided')
