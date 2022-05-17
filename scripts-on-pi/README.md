@@ -9,7 +9,7 @@ Refs for noninteractive `raspi-config` setup [here](https://raspberrypi.stackexc
    * Need a reboot for this to take effect
 5. `sudo apt-get install -y git`
 6. Add ssh key to Github:
-   * Run `ssh-keygen -t ed25519 -C "<email>"`
+   * Run `ssh-keygen -t ed25519 -N "" -C "scubbojj@gmail.com" -f $HOME/.ssh/id_ed25519`
    * `eval "$(ssh-agent -s)"`
    * `ssh-add ~/.ssh/id_ed25519`
    * `cat ~/.ssh/id_ed25519.pub` and copy
