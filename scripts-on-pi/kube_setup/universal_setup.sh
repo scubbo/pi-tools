@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -e
+
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+# https://anthonynsimon.com/blog/kubernetes-cluster-raspberry-pi/
+# Uses Ubuntu rather than Raspbian, but should work the same? Hopefully!
+apt upgrade -y
+apt install -y docker.io
+
+####
+# Set permissions for docker
+####
+groupadd docker
+usermod -aG docker pi
+
+####
+# Install screen
+####
+apt-get install -y screen
+
+###
+# Install ssh keys
+###
+(umask 077 && test -d /home/pi/.ssh || mkdir /home/pi/.ssh)
+(umask 177 && touch /home/pi/.ssh/authorized_keys)
+chown pi /home/pi/.ssh/authorized_keys
+chgrp pi /home/pi/.ssh/authorized_keys
+curl --silent https://github.com/scubbo.keys >> /home/pi/.ssh/authorized_keys
+echo "Finished updating ssh authorized_keys"
+
+# Slightly different cmdline.txt options - ref
+# https://github.com/me-box/databox/issues/303
+#
+# Original cmdline.txt:
+# `console=serial0,115200 console=tty1 root=PARTUUID=<id> rootfstype=ext4 fsck.repair=yes rootwait`
+#
+sed -i \
+'$ s/$/ cgroup_enable=memory cgroup_memory=1 swapaccount=1/' \
+/boot/cmdline.txt
+echo "The preceding change necessitates a reboot. Going down in..."
+for i in {10..1}
+do
+   echo $i
+   sleep 1
+done
+reboot now
