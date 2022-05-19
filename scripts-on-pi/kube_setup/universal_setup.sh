@@ -23,6 +23,12 @@ usermod -aG docker pi
 ####
 apt-get install -y screen
 
+####
+# Install fail2ban
+# (configuration and initialization happen in per-role setup)
+####
+apt install -y fail2ban
+
 ###
 # Install ssh keys
 ###
