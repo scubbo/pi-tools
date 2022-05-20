@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      containers:
+      - env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: jellyfin/jellyfin
+        imagePullPolicy: IfNotPresent
+        name: jellyfin
+        ports:
+        - containerPort: 8096
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /media
+          name: jf-media
+          readOnly: True
+        - mountPath: /config
+          name: jf-config
+        - mountPath: /cache
+          name: jf-cache
+      restartPolicy: Always
+      volumes:
+      - name: jf-media
+        persistentVolumeClaim:
+          claimName: jf-media-pvc
+      - name: jf-config
+        persistentVolumeClaim:
+          claimName: jf-config-pvc
+      - name: jf-cache
+        persistentVolumeClaim:
+          claimName: jf-cache-pvc

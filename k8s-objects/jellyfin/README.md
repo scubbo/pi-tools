@@ -1,0 +1,1 @@
+Apply namespace.yaml first, then the whole of the directory.
