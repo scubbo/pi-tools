@@ -44,6 +44,67 @@ docker run -d --name gitea \
 # Hopefully the first-time setup will be stored
 # into the persistent storage!
 
+####
+# Set up Drone CI/CD.
+# Note that the docs say they "do not recommend installing Drone and Gitea on the
+# same machine due to network complications", but...we'll see how it goes :shrug:
+# https://docs.drone.io/server/provider/gitea/
+####
+droneDir="/mnt/BERTHA/drone"
+mkdir -p $droneDir
+sudo chown pi:pi $droneDir
+
+droneEtcDir="/mnt/BERTHA/etc/gitea-drone-oauth-secrets"
+mkdir -p $droneEtcDir
+sudo chown pi:pi $droneEtcDir
+
+if [[ -f $droneEtcDir/clientId ]]; then
+  clientId=$(cat $droneEtcDir/clientId)
+  if [[ -z $clientId ]]; then
+    echo "Client Id variable is empty"
+    exit 1
+  fi
+else
+  echo "Client Id file does not exist. Create an OAuth app in Gitea and record the values"
+  exit 1
+fi
+
+if [[ -f $droneEtcDir/clientSecret ]]; then
+  clientSecret=$(cat $droneEtcDir/clientSecret)
+  if [[ -z $clientSecret ]]; then
+    echo "Client Secret variable is empty"
+    exit 1
+  fi
+else
+  echo "Client Secret file does not exist. Create an OAuth app in Gitea and record the values"
+  exit 1
+fi
+
+droneRPCSecret=$(openssl rand -hex 16)
+# TODO - should Drone (particularly, runners) be managed via Kubernetes? It would be neater,
+# but then we get into a circular dependency of not being able to build changes if k8s is down.
+# Probably fine, since we can always start Drone manually outside k8s if necessary.
+
+# Install Docker Server
+docker run \
+    --volume=$droneDir:/data \
+    --env=DRONE_GITEA_SERVER=http://rassigma.avril:3000 \
+    --env=DRONE_GITEA_CLIENT_ID=$clientId \
+    --env=DRONE_GITEA_CLIENT_SECRET=$clientSecret \
+    --env=DRONE_RPC_SECRET=$droneRPCSecret \
+    --env=DRONE_SERVER_HOST=drone.scubbo.org \
+    --env=DRONE_SERVER_PROTO=https \
+    --env=DRONE_AGENTS_ENABLED=true \
+    --publish=3500:80 \
+    --publish=3501:443 \
+    --restart=always \
+    --detach=true \
+    --name=drone \
+    drone/drone:2
+# (Runners will run on worker nodes)
+echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
+
+
 
 ####
 # Set up container registry
