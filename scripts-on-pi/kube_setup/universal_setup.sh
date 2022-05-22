@@ -7,9 +7,23 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
+echo "Enter hostname"
+read hostname
+
+apt upgrade -y
+
+raspi-config nonint do_expand_rootfs
+raspi-config nonint do_change_locale en_US.UTF-8
+raspi-config nonint do_wifi_country US
+raspi-config nonint do_hostname
+apt-get install -y git
+
+# TODO - key creation. Awkward because we're currently acting as root,
+# but we'd want them to be created under pi's home.
+# I'm sure you can do something like that with `su`
+
 # https://anthonynsimon.com/blog/kubernetes-cluster-raspberry-pi/
 # Uses Ubuntu rather than Raspbian, but should work the same? Hopefully!
-apt upgrade -y
 apt install -y docker.io
 
 ####
