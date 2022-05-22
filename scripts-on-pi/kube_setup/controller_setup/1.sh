@@ -8,6 +8,33 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 ####
+# Mount Bertha...
+####
+mkdir -p /mnt/BERTHA
+berthaDev=$(blkid | grep 'BERTHAIV' | perl -pe 's/(.*):.*/$1/')
+berthaUUID=$(blkid | grep 'BERTHAIV' | perl -pe 's/.* UUID="(.*?)".*/$1/')
+if [ -z "$berthaDev" ] || [ -z "$berthaUUID" ]; then
+  echo "One of the bertha-variables is empty. Exiting (do you have the Hard Drive plugged in?"
+  exit 1
+fi
+if [[ $(grep '/mnt/BERTHA' /etc/fstab | wc -l) -lt 1 ]]; then
+  echo "UUID=$berthaUUID /mnt/BERTHA ext4 defaults 0 2" >> /etc/fstab
+fi
+mount -a
+
+####
+# ...and share via NFS
+# https://pimylifeup.com/raspberry-pi-nfs/
+####
+apt-get install -y nfs-kernel-server
+if [[ $(grep '/mnt/BERTHA' /etc/exports | wc -l) -lt 1 ]]; then
+  # Note - this hard-codes the IDs' of `pi` user. If needed to be dynamic, you can
+  # fetch them by parsing the output of `id pi`
+  echo "/mnt/BERTHA 192.168.1.0/24(rw,all_squash,insecure,async,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
+fi
+exportfs -ra
+
+####
 # Set up fail2ban
 ####
 ln -s /mnt/BERTHA/etc/fail2ban/jail.local /etc/fail2ban/jail.local
