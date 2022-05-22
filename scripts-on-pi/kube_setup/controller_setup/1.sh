@@ -52,7 +52,7 @@ service fail2ban restart
 # the first time around, or what...
 ####
 mkdir -p /mnt/BERTHA/gitea
-sudo chown pi:pi /mnt/BERTHA/gitea
+chown pi:pi /mnt/BERTHA/gitea
 # Note - *not* `--internal`, despite the fact that the compose.yml file in the Gitea website
 # includes `external: false`. They are not antonyms! `external` in a Compose file means
 # "this network was created outside of a Compose context", not "this network is not-internal"
@@ -79,7 +79,7 @@ docker run -d --name gitea \
 ####
 droneDir="/mnt/BERTHA/drone"
 mkdir -p $droneDir
-sudo chown pi:pi $droneDir
+chown pi:pi $droneDir
 
 droneEtcDir="/mnt/BERTHA/etc/gitea-drone-oauth-secrets"
 mkdir -p $droneEtcDir
