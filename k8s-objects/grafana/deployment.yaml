@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: grafana
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - image: grafana/grafana-oss
+          imagePullPolicy: IfNotPresent
+          name: grafana
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-db
+            - mountPath: /etc/grafana/grafana.ini
+              name: grafana-config
+              subPath: grafana.ini
+      restartPolicy: Always
+      volumes:
+        - name: grafana-db
+          persistentVolumeClaim:
+            claimName: grafana-db-pvc
+        - name: grafana-config
+          persistentVolumeClaim:
+            claimName: grafana-config-pvc
