@@ -48,8 +48,8 @@ apt install -y fail2ban
 ###
 (umask 077 && test -d /home/pi/.ssh || mkdir /home/pi/.ssh)
 (umask 177 && touch /home/pi/.ssh/authorized_keys)
-chown pi /home/pi/.ssh/authorized_keys
-chgrp pi /home/pi/.ssh/authorized_keys
+chown pi:pi /home/pi/.ssh
+chown pi:pi /home/pi/.ssh/authorized_keys
 curl --silent https://github.com/scubbo.keys >> /home/pi/.ssh/authorized_keys
 echo "Finished updating ssh authorized_keys"
 
