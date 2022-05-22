@@ -122,4 +122,4 @@ docker run -d \
 curl -sfL https://get.k3s.io | sh -
 token=$(cat /var/lib/rancher/k3s/server/node-token)
 ipAddr=$(ip addr | grep '192.168' | perl -pe 's/.*inet (.*?)\/24.*/$1/')
-echo "Run the following command on agent nodes: \`curl -sfL https://get.k3s.io | K3S_URL=https//$ipAddr:6443 K3S_TOKEN=$token sudo sh -\`"
+echo "Run the following command on agent nodes: \`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -\`"
