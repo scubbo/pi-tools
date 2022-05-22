@@ -29,7 +29,7 @@ apt install -y docker.io
 ####
 # Set permissions for docker
 ####
-groupadd docker
+groupadd -f docker
 usermod -aG docker pi
 
 ####
