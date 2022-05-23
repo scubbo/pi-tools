@@ -1,6 +1,8 @@
 Manual setup steps (I'm still learning, not clear whether it's better practice to reference the existing external yaml files or to set up your own versions here? Or is this where I'm supposed to learn helm?):
 
 ```
+# Base resources that are not aligned to specific app
+kubectl apply -R -f global
 # Not sure whether we should declare all namespaces in yaml files, or create them manually? One-offs and rare, so probably doesn't matter _that_ much?
 kubectl create namespace kubernetes-dashboard
 kubens kubernetes-dashboard
