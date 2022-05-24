@@ -10,7 +10,6 @@ fi
 ####
 # Mount Bertha...
 ####
-mkdir -p /mnt/BERTHA
 berthaDev=$(blkid | grep 'BERTHAIV' | perl -pe 's/(.*):.*/$1/')
 berthaUUID=$(blkid | grep 'BERTHAIV' | perl -pe 's/.* UUID="(.*?)".*/$1/')
 if [ -z "$berthaDev" ] || [ -z "$berthaUUID" ]; then
@@ -51,7 +50,6 @@ service fail2ban restart
 # manual method below again and it worked. Not sure if I just didn't wait long enough
 # the first time around, or what...
 ####
-mkdir -p /mnt/BERTHA/gitea
 chown pi:pi /mnt/BERTHA/gitea
 # Note - *not* `--internal`, despite the fact that the compose.yml file in the Gitea website
 # includes `external: false`. They are not antonyms! `external` in a Compose file means
@@ -78,11 +76,9 @@ docker run -d --name gitea \
 # https://docs.drone.io/server/provider/gitea/
 ####
 droneDir="/mnt/BERTHA/drone"
-mkdir -p $droneDir
 chown pi:pi $droneDir
 
 droneEtcDir="/mnt/BERTHA/etc/gitea-drone-oauth-secrets"
-mkdir -p $droneEtcDir
 sudo chown pi:pi $droneEtcDir
 
 if [[ -f $droneEtcDir/clientId ]]; then
@@ -137,8 +133,6 @@ echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
 # Set up container registry
 # (Do this independently of Kubernetes because it's part of bootstrapping the K8s cluster!)
 ####
-# TODO - this assumes the drive has already been mounted
-mkdir -p /mnt/BERTHA/image-registry
 docker run -d \
   -p 5000:5000 \
   --restart=always \
