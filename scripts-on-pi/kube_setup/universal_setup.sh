@@ -11,12 +11,20 @@ echo "Enter hostname"
 read hostname
 
 apt upgrade -y
+apt-get update
+apt-get upgrade
 
 raspi-config nonint do_expand_rootfs
 raspi-config nonint do_change_locale en_US.UTF-8
 raspi-config nonint do_wifi_country US
 raspi-config nonint do_hostname
-apt-get install -y git
+
+####
+# Shell customization, dotfile personalization
+####
+apt-get install -y zsh
+usermod --shell /bin/zsh pi
+echo "TODO - make a public dotfiles repo that can be curled without auth"
 
 # TODO - key creation. Awkward because we're currently acting as root,
 # but we'd want them to be created under pi's home.
