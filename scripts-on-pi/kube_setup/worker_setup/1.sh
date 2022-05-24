@@ -42,6 +42,7 @@ docker run \
     --env=DRONE_RPC_SECRET=$droneRPCSecret \
     --env=DRONE_RUNNER_CAPACITY=2 \
     --env=DRONE_RUNNER_NAME=drone-runner \
+    --env=DRONE_RUNNER_VOLUMES=/var/run/docker.sock:/var/run/docker.sock \
     --publish=3502:3000 \
     --restart=always \
     --detach=true \
