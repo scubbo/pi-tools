@@ -140,8 +140,13 @@ docker run -d \
   -v /mnt/BERTHA/image-registry:/var/lib/registry \
   registry:2
 
+# https://rancher.com/docs/k3s/latest/en/installation/private-registry/
+mkdir -p /etc/rancher/k3s/
+ln -s /mnt/BERTHA/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
+
 curl -sfL https://get.k3s.io | sh -
 token=$(cat /var/lib/rancher/k3s/server/node-token)
 ipAddr=$(ip addr | grep '192.168' | perl -pe 's/.*inet (.*?)\/24.*/$1/')
-echo "Run the following command on agent nodes: \`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -\`"
+echo "Run the following command on agent nodes after you have created /etc/rancher/k3s/registries.yaml:"
+echo "\`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -\`"
 echo "(Don't forget to grab the file from /etc/rancher/k3s/k3s.yaml, change 127.0.0.1 to appropriate hostname, and save on laptop in ~/.kube/config!)"

@@ -32,6 +32,10 @@ echo -e "rassigma.avril:/mnt/BERTHA\t/mnt/NAS\tnfs\tdefaults\t0\t0" >> /etc/fsta
 ln -s /mnt/NAS/etc/fail2ban/jail.local /etc/fail2ban/jail.local
 service fail2ban restart
 
+# https://rancher.com/docs/k3s/latest/en/installation/private-registry/
+mkdir -p /etc/rancher/k3s/
+ln -s /mnt/NAS/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
+
 ####
 # Install Drone runner
 ####
