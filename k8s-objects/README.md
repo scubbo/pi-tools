@@ -1,6 +1,10 @@
 Manual setup steps (I'm still learning, not clear whether it's better practice to reference the existing external yaml files or to set up your own versions here? Or is this where I'm supposed to learn helm?):
 
 ```
+sudo mkdir /home/pi/.kube
+sudo chown pi:pi /home/pi/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml /home/pi/.kube/config
+export KUBECONFIG=/home/pi/.kube/config
 # Base resources that are not aligned to specific app
 kubectl apply -R -f global
 # Not sure whether we should declare all namespaces in yaml files, or create them manually? One-offs and rare, so probably doesn't matter _that_ much?
