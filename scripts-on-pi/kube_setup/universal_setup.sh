@@ -11,13 +11,8 @@ echo "Enter hostname"
 read hostname
 
 apt upgrade -y
-apt-get update
-apt-get upgrade
-
-raspi-config nonint do_expand_rootfs
-raspi-config nonint do_change_locale en_US.UTF-8
-raspi-config nonint do_wifi_country US
-raspi-config nonint do_hostname
+apt-get update -y
+apt-get upgrade -y
 
 ####
 # Shell customization, dotfile personalization
@@ -25,10 +20,6 @@ raspi-config nonint do_hostname
 apt-get install -y zsh
 usermod --shell /bin/zsh pi
 echo "TODO - make a public dotfiles repo that can be curled without auth"
-
-# TODO - key creation. Awkward because we're currently acting as root,
-# but we'd want them to be created under pi's home.
-# I'm sure you can do something like that with `su`
 
 # https://anthonynsimon.com/blog/kubernetes-cluster-raspberry-pi/
 # Uses Ubuntu rather than Raspbian, but should work the same? Hopefully!
@@ -52,7 +43,7 @@ apt-get install -y screen
 apt install -y fail2ban
 
 ###
-# Install ssh keys
+# Install ssh keys...
 ###
 (umask 077 && test -d /home/pi/.ssh || mkdir /home/pi/.ssh)
 (umask 177 && touch /home/pi/.ssh/authorized_keys)
@@ -60,6 +51,20 @@ chown pi:pi /home/pi/.ssh
 chown pi:pi /home/pi/.ssh/authorized_keys
 curl --silent https://github.com/scubbo.keys >> /home/pi/.ssh/authorized_keys
 echo "Finished updating ssh authorized_keys"
+
+###
+# ...and create your own
+####
+ssh-keygen -t ed25519 -N "" -C "scubbojj@gmail.com" -f /home/pi/.ssh/id_ed25519
+chown pi:pi /home/pi/.ssh/id_ed25519
+echo "Add this as a trusted key in Github and anywhere else that is appropriate:"
+cat /home/pi/.ssh/id_ed25519.pub
+
+
+raspi-config nonint do_expand_rootfs
+raspi-config nonint do_change_locale en_US.UTF-8
+raspi-config nonint do_wifi_country US
+raspi-config nonint do_hostname
 
 # Slightly different cmdline.txt options - ref
 # https://github.com/me-box/databox/issues/303
