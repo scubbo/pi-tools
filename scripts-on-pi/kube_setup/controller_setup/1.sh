@@ -35,11 +35,19 @@ if [[ $(grep '/mnt/BERTHA' /etc/exports | wc -l) -lt 1 ]]; then
 fi
 exportfs -ra
 
+
 ####
 # Set up fail2ban
 ####
 ln -s /mnt/BERTHA/etc/fail2ban/jail.local /etc/fail2ban/jail.local
 service fail2ban restart
+
+####
+# Set up postfix (not just for email, enables logging from CRON)
+####
+debconf-set-selections <<< "postfix postfix/mailname string $(hostname)"
+debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Local only'"
+apt-get install -y postfix
 
 ####
 # Set up Gitea
