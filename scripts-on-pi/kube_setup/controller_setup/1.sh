@@ -10,6 +10,8 @@ fi
 ####
 # Mount Bertha...
 ####
+mkdir -p /mnt/BERTHA
+chown pi:pi /mnt/BERTHA
 berthaDev=$(blkid | grep 'BERTHAIV' | perl -pe 's/(.*):.*/$1/')
 berthaUUID=$(blkid | grep 'BERTHAIV' | perl -pe 's/.* UUID="(.*?)".*/$1/')
 if [ -z "$berthaDev" ] || [ -z "$berthaUUID" ]; then
@@ -126,7 +128,6 @@ docker run \
     drone/drone:2
 # (Runners will run on worker nodes)
 echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
-
 
 
 ####
