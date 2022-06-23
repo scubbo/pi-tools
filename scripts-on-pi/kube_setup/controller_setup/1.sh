@@ -157,8 +157,25 @@ mkdir -p /etc/rancher/k3s/
 ln -s /mnt/BERTHA/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
 
 curl -sfL https://get.k3s.io | sh -
+# Install krew (kubectl plugin manager) before finishing the script with the
+# output that describes how to add other nodes to the kubernetes cluster
+# https://krew.sigs.k8s.io/docs/user-guide/setup/install/
+(
+  set -x; cd "$(mktemp -d)" &&
+  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+  KREW="krew-${OS}_${ARCH}" &&
+  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+  tar zxvf "${KREW}.tar.gz" &&
+  ./"${KREW}" install krew
+)
+
+
 token=$(cat /var/lib/rancher/k3s/server/node-token)
 ipAddr=$(ip addr | grep '192.168' | perl -pe 's/.*inet (.*?)\/24.*/$1/')
+echo
+echo "==========================="
+echo
 echo "Run the following command on agent nodes after you have created /etc/rancher/k3s/registries.yaml:"
 echo "\`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -\`"
 echo "(Don't forget to grab the file from /etc/rancher/k3s/k3s.yaml, change 127.0.0.1 to appropriate hostname, and save on laptop in ~/.kube/config!)"
