@@ -32,6 +32,9 @@ if [[ $(grep '/mnt/BERTHA' /etc/exports | wc -l) -lt 1 ]]; then
   # Note - this hard-codes the IDs' of `pi` user. If needed to be dynamic, you can
   # fetch them by parsing the output of `id pi`
   echo "/mnt/BERTHA 192.168.1.0/24(rw,all_squash,insecure,async,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
+  # Need to permit mounting from 127.0.0.1 because otherwise pods that run on the controller won't be able to access NFS!
+  # (Could have done this in a one-liner, but this makes it more explicit that the options are the same)
+  echo "/mnt/BERTHA 127.0.0.1(rw,all_squash,insecure,async,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
 fi
 exportfs -ra
 
