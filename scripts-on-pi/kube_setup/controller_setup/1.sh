@@ -19,7 +19,7 @@ if [ -z "$berthaDev" ] || [ -z "$berthaUUID" ]; then
   exit 1
 fi
 if [[ $(grep '/mnt/BERTHA' /etc/fstab | wc -l) -lt 1 ]]; then
-  echo "UUID=$berthaUUID /mnt/BERTHA ext4 defaults 0 2" >> /etc/fstab
+  echo "UUID=$berthaUUID /mnt/BERTHA ext4 defaults,nofail 0 2" >> /etc/fstab
 fi
 mount -a
 
