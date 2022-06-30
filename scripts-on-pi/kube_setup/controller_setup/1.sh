@@ -142,14 +142,45 @@ echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
 
 
 ####
-# Set up container registry
+# Set up container registry - https://docs.docker.com/registry/deploying/
 # (Do this independently of Kubernetes because it's part of bootstrapping the K8s cluster!)
+#
+# Reference https://community.letsencrypt.org/t/how-to-get-crt-and-key-files-from-i-just-have-pem-files/7348/3
+# for the mapping between *.pem files, and .crt/.key files
+#
+# Note that the certificates have already been sourced manually, using the following command
+# (with appropriate port-forwarding):
+#
+# ```
+# sudo docker run -it --rm --name certbot \
+#   -v "/mnt/NAS/certs:/etc/letsencrypt" \
+#   -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
+#   -p 8800:80 -p 8443:443 \
+#   certbot/certbot:arm64v8-latest certonly \
+#   --standalone -d docker-registry.scubbo.org \
+#   -m scubbojj@protonmail.com --agree-tos -n
+# ```
+#
+# Note it's important to create the cert _in_ /mnt/NAS, rather than creating elsewhere and
+# moving them to the NAS, because the process creates relative symlinks.
+#
+# See https://eff-certbot.readthedocs.io/en/stable/using.html#setting-up-automated-renewal
+# for instructions for automated renewal.
+#
+# See https://ubuntu.com/server/docs/security-trust-store for how to install certs
+#
+# Note we cannot host on host port 443, because k8s overrides that.
+# Ensure that DNS server serves IP address of this host for `docker-registry.scubbo.org`
 ####
 docker run -d \
-  -p 5000:5000 \
+  -p 8843:443 \
   --restart=always \
   --name registry \
+  -v /mnt/BERTHA/certs:/certs \
   -v /mnt/BERTHA/image-registry:/var/lib/registry \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/live/docker-registry.scubbo.org/cert.pem \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/live/docker-registry.scubbo.org/privkey.pem \
   registry:2
 
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
@@ -183,3 +214,5 @@ echo
 echo "Note you haven't set up Dynamic DNS - prerequisite is to pull in pi-tools"
 echo "When you've done that, update this script with: echo \"* * * * * pi ./updateDNS.py --dns-name vpn.scubbo.org --token-file-location /mnt/BERTHA/etc/scubbo-cf-dyndns/token\" > /etc/cron.d/scubbo-cf-dyndns"
 echo "Note - must be pi (not root) because of location of pi-tools and logging"
+echo
+echo "Also ensure that DNS server reports this node's IP address ($ipAddr) for docker-registry.scubbo.org"
