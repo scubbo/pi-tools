@@ -35,6 +35,11 @@ service fail2ban restart
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
 mkdir -p /etc/rancher/k3s/
 ln -s /mnt/NAS/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
+mkdir -p /etc/rancher/k3s/cert.d/docker-registry.scubbo.org
+cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/chain.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/ca.crt
+cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/cert.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.cert
+cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.key
+
 
 ####
 # Install Drone runner

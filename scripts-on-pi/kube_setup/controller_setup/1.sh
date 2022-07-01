@@ -184,8 +184,17 @@ docker run -d \
   registry:2
 
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
+# https://github.com/k3s-io/k3s/issues/1148#issuecomment-641687668 (for TLS certs for private registry)
+# TODO - we do exactly the same thing here in worker_setup, but using a different path because that references
+# `/mnt/NAS/...`. Maybe we should unify by having controller mount its own NFS filesystem?
 mkdir -p /etc/rancher/k3s/
 ln -s /mnt/BERTHA/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
+# Note that, unlike for Docker, you do not need to encode the port in the directory name here -
+# in fact, that directory name is arbitrary (and will be referenced direclty in registries.yaml)
+mkdir -p /etc/rancher/k3s/cert.d/docker-registry.scubbo.org
+cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/chain.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/ca.crt
+cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/cert.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.cert
+cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.key
 
 curl -sfL https://get.k3s.io | sh -
 # Install krew (kubectl plugin manager) before finishing the script with the
