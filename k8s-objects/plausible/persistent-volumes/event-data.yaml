@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: event-data
+  namespace: plausible
+spec:
+  capacity:
+    storage: 1G
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: rassigma.avril
+    path: "/mnt/BERTHA/etc/plausible/event-data"
+  mountOptions:
+    - nfsvers=4.2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: event-data-pvc
+  namespace: plausible
+spec:
+  storageClassName: ""
+  volumeName: event-data
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 1G

@@ -1,0 +1,99 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plausible
+  namespace: plausible
+spec:
+  selector:
+    matchLabels:
+      app: plausible
+  template:
+    metadata:
+      labels:
+        app: plausible
+        tier: frontend
+    spec:
+      # This is how to do "depends_on" in Kubernetes:
+      # https://stackoverflow.com/questions/49368047/what-is-the-equivalent-for-depends-on-in-kubernetes
+      initContainers:
+        - name: test-postgres-exists
+          image: postgres:12
+          env:
+            - name: POSTGRES_PASSWORD
+            # This password will never be used - we just use the `postgres:12` image to provide the `psql` CLI tool.
+            # But without it, the container will fail to start up
+              value: postgrezz
+            - name: remote_postgres_password
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: password
+          # "\dt" is postgres for "List tables"
+          command: [ "psql", "postgres://postgres:$(remote_postgres_password)@plausible-db:5432/plausible_db", "-c", "\\dt"]
+          # TODO - same for Clickhouse
+      containers:
+      - image: docker-registry.scubbo.org:8843/plausible/analytics
+        name: plausible
+        env:
+          # This is the equivalent of the `plausible-conf.env` file from the standard docker-compose
+          # method: https://github.com/plausible/hosting/blob/master/plausible-conf.env
+          # Full documentation of options here: https://plausible.io/docs/self-hosting-configuration
+          - name: ADMIN_USER_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: plausible-secrets
+                key: email
+          - name: ADMIN_USER_NAME
+            valueFrom:
+              secretKeyRef:
+                name: plausible-secrets
+                key: username
+          - name: ADMIN_USER_PWD
+            valueFrom:
+              secretKeyRef:
+                name: plausible-secrets
+                key: password
+          - name: BASE_URL
+            value: https://tracking.scubbo.com
+          - name: SECRET_KEY_BASE
+            valueFrom:
+              secretKeyRef:
+                name: plausible-secrets
+                key: secret-key-base
+          # This env variable is not actually used directly, but is concatenated into the _next_ value:
+          # see https://joeblogs.technology/2020/12/concatenating-kubernetes-secrets-for-environment-variables/
+          - name: postgres_password
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secrets
+                key: password
+          - name: DATABASE_URL
+            # Must match the K8s-provided DNS name for the service for the
+            # plausible_db container. Note that the default for this
+            # (https://github.com/plausible/analytics/blob/0324d03da98092dd586f0a9f39469f0a511e945c/config/runtime.exs#L56)
+            # is not feasible since it includes an underscore, which is illegal in k8s service names
+            #
+            # Note `plausible-db` is a k8s-provided domain name for the Service with the same name.
+            # Alternative names are `plausible-db.plausible` (including namespace), or either of those suffixed
+            # with `.svc.cluster.local`.
+            value: postgres://postgres:$(postgres_password)@plausible-db:5432/plausible_db
+            # Similar comments as above.
+          - name: CLICKHOUSE_DATABASE_URL
+            value: http://plausible-events-db.plausible.svc.cluster.local:8123/plausible_events_db
+        command: [ "/bin/sh", "-c", "--" ]
+        args: [ "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run" ]
+---
+# Service to expose Plausible
+apiVersion: v1
+kind: Service
+metadata:
+  name: plausible-svc
+  namespace: plausible
+spec:
+  type: ClusterIP
+  selector:
+    app: plausible
+    tier: frontend
+  ports:
+    - port: 8000

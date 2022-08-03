@@ -1,0 +1,149 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plausible-dependencies
+  namespace: plausible
+spec:
+  selector:
+    matchLabels:
+      app: plausible
+  template:
+    metadata:
+      labels:
+        app: plausible
+        tier: backend
+    spec:
+      initContainers:
+      # https://stackoverflow.com/a/51203031/1040915 - attempts by the image
+      # to `chown` mounted volumes will fail because k8s mounts them with `700` to `1000:1000`,
+      # so we need to chown the mounted dir to the container's user
+      - name: chmod-er
+        image: busybox:latest
+        command:
+        - chown
+        - -R
+        - root:root
+        - /var/lib/postgresql/data
+        - /var/lib/clickhouse
+        volumeMounts:
+        # Note that there's no reason that these mounts need to be at
+        # the same paths that they are in the main containers - but they
+        # _do_ have to match the arguments to `chown` in `command`.
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+        - mountPath: /var/lib/clickhouse
+          name: event-data
+      containers:
+      - image: docker-registry.scubbo.org:8843/bytemark/smtp
+        name: mail
+
+      - image: postgres:12
+        name: plausible-db
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secrets
+              key: password
+
+      - image: clickhouse/clickhouse-server:22.3.3-alpine
+        name: plausible-events-db
+        volumeMounts:
+        - mountPath: /var/lib/clickhouse
+          name: event-data
+      # I haven't set ulimits here to match the docker-compose -
+      # hope they don't matter!
+      #
+      # https://serverfault.com/a/577441/151190 suggests that
+      # "[t]is almost no software in existence that can handle
+      # more than about 20,000 files open at a time", and the
+      # original limits were an order of magnitude higher than
+      # that, so the limit was probably not having any effect.
+
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: db-data-pvc
+      - name: event-data
+        persistentVolumeClaim:
+          claimName: event-data-pvc
+      - name: geoip
+        persistentVolumeClaim:
+          claimName: geoip-pvc
+---
+# Service to expose Postgres
+apiVersion: v1
+kind: Service
+metadata:
+  # Note that this doesn't match Plausible's default expectations:
+  # The docker-compose file I referenced (https://github.com/plausible/hosting/blob/master/docker-compose.yml)
+  # assumes that the db container will be available at DNS name `plausible_db`,
+  # but the underscore is illegal for K8s' regex.
+  #
+  # https://github.com/plausible/analytics/blob/0324d03da98092dd586f0a9f39469f0a511e945c/config/runtime.exs#L52-L57
+  # shows how Plausible determines the appropriate value (check Environment, then fallback to a default)
+  name: plausible-db
+  namespace: plausible
+spec:
+  type: ClusterIP
+  selector:
+    app: plausible
+    tier: backend
+  ports:
+    - port: 5432
+---
+# Service to expose Clickhouse
+apiVersion: v1
+kind: Service
+metadata:
+  name: plausible-events-db
+  namespace: plausible
+spec:
+  type: ClusterIP
+  selector:
+    app: plausible
+    tier: backend
+  ports:
+    - port: 8123
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-config
+  namespace: plausible
+data:
+  clickhouse-config.xml: |
+    <yandex>
+        <logger>
+            <level>warning</level>
+            <console>true</console>
+        </logger>
+
+        <!-- Stop all the unnecessary logging -->
+        <query_thread_log remove="remove"/>
+        <query_log remove="remove"/>
+        <text_log remove="remove"/>
+        <trace_log remove="remove"/>
+        <metric_log remove="remove"/>
+        <asynchronous_metric_log remove="remove"/>
+    </yandex>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-user-config
+  namespace: plausible
+data:
+  clickhouse-user-config.xml: |
+    <yandex>
+        <profiles>
+            <default>
+                <log_queries>0</log_queries>
+                <log_query_threads>0</log_query_threads>
+            </default>
+        </profiles>
+    </yandex>

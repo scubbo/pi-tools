@@ -28,6 +28,8 @@ spec:
         # below.
         - --config
         - /etc/cloudflared/config/config.yaml
+        - --origincert
+        - /etc/cloudflared/certs/cert.pem
 #        - --loglevel
 #        - debug
         - run
@@ -51,6 +53,9 @@ spec:
         - name: creds
           mountPath: /etc/cloudflared/creds
           readOnly: true
+        - name: certs
+          mountPath: /etc/cloudflared/certs
+          readOnly: true
       volumes:
       - name: creds
         secret:
@@ -61,6 +66,14 @@ spec:
           # --from-file=credentials.json=/Users/yourusername/.cloudflared/<tunnel ID>.json
           # ```
           secretName: tunnel-credentials
+      - name: certs
+        secret:
+          # As above, create secret containing the certificate with:
+          # ```
+          # kubectl create secret generic cert \
+          # --from-file=cert.pem=<path_to_cred>
+          # ```
+          secretName: cert
       # Create a config.yaml file from the ConfigMap below.
       - name: config
         configMap:
@@ -103,9 +116,8 @@ data:
       service: http://192.168.1.10:3000
     - hostname: drone.scubbo.org
       service: http://192.168.1.10:3500
-    # TODO - K8s-ize Plausible so this can refer to a Service
     - hostname: tracking.scubbo.org
-      service: http://192.168.1.10:8109
+      service: http://plausible-svc.plausible.svc.cluster.local:8000
     # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
     # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
     # in the connection from cloudflared to your local service, not from the internet to cloudflared.
