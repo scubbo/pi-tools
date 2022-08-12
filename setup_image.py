@@ -125,7 +125,7 @@ def _find_disk_number_and_info():
     exit(1)
 
   op = Popen(['diskutil', 'list'], stdout=PIPE)\
-             .stdout.read().decode('ascii')
+             .stdout.read().decode()
   lines = op.splitlines()
   disk_number = -1
   info = ''
@@ -186,7 +186,18 @@ def _write_image_to_disk(image_file_path: Path, disk_number: int):
     raise
 
 
+def _check_for_openssl_version():
+  version_string = check_output(['openssl', 'version'], encoding='UTF-8').strip()
+  version_number = version_string.split()[1]
+  #if version_string
+  if not version_string.startswith('OpenSSL') or (int(version_number.split('.')[0]) < 1 and int(version_number.split('.')[1]) < 1):
+    print(f'Incorrect version of OpenSSL installed: "{version_string}". Check https://stackoverflow.com/a/62595252 or https://ubuntu101.co.za/osx-and-macos/homebrew-missing-sha512sum-sha256sum-macos/ for more information')
+    exit(1)
+
+
 def finalize(args):
+  _check_for_openssl_version()
+
   if args.no_wifi:
     print('no-wifi flag set - not setting up wifi')
   else:
