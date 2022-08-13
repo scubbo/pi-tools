@@ -28,6 +28,7 @@ export DEBIAN_FRONTEND=noninteractive
 mkdir /mnt/NAS
 chown pi:pi /mnt/NAS
 echo -e "rassigma.avril:/mnt/BERTHA\t/mnt/NAS\tnfs\tdefaults\t0\t0" >> /etc/fstab
+mount -a
 
 ####
 # Set up fail2ban
@@ -39,9 +40,9 @@ service fail2ban restart
 mkdir -p /etc/rancher/k3s/
 ln -s /mnt/NAS/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
 mkdir -p /etc/rancher/k3s/cert.d/docker-registry.scubbo.org
-cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/chain.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/ca.crt
-cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/cert.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.cert
-cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.key
+cp -L /mnt/NAS/certs/live/docker-registry.scubbo.org/chain.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/ca.crt
+cp -L /mnt/NAS/certs/live/docker-registry.scubbo.org/cert.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.cert
+cp -L /mnt/NAS/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.key
 
 
 ####
