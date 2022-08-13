@@ -66,3 +66,7 @@ docker run \
     --detach=true \
     --name=runner \
     drone/drone-runner-docker:1
+
+echo "Now run the following command on the main server node, and it will output a command that you should run here to join the k3s cluster"
+echo
+echo $'echo "curl -sfL https://get.k3s.io | sudo K3S_URL=https://$(ip addr | grep \'192.168\' | perl -pe \'s/.*inet (.*?)\/24.*/$1/\'):6443 K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token) sh -"'
