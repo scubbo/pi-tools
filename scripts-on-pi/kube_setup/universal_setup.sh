@@ -67,7 +67,7 @@ cat /home/pi/.ssh/id_ed25519.pub
 raspi-config nonint do_expand_rootfs
 raspi-config nonint do_change_locale en_US.UTF-8
 raspi-config nonint do_wifi_country US
-raspi-config nonint do_hostname
+raspi-config nonint do_hostname "$hostname"
 
 # Slightly different cmdline.txt options - ref
 # https://github.com/me-box/databox/issues/303
