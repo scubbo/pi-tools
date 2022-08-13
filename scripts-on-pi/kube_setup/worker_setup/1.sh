@@ -19,6 +19,9 @@ if [ -z "$droneRPCSecret" ]; then
   exit 1
 fi
 
+# https://unix.stackexchange.com/a/146341
+export DEBIAN_FRONTEND=noninteractive
+
 ####
 # Mount NAS
 ####
