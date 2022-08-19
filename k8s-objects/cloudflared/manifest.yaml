@@ -14,24 +14,31 @@ spec:
       labels:
         app: cloudflared
     spec:
+      # Run the `tunnel route dns ...` commands as required. Annoying that cloudflared doesn't detect that automatically!
+      # This is janky as heck, but hey, it...."works" :P if you can point me at a better way, please do!
+      initContainers:
+      - name: dns-setter
+        image: "docker-registry.scubbo.org:8843/scubbo/cloudflare-tunnel-dns:built_in_ci"
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "./dns_update.sh --config /etc/cloudflared/config.yaml --cert /etc/cloudflared/certs/cert.pem --domain scubbo.org" ]
+        volumeMounts:
+        - name: config
+          mountPath: /etc/cloudflared/
+          readOnly: true
+        - name: certs
+          mountPath: /etc/cloudflared/certs
+          readOnly: true
       containers:
       - name: cloudflared
-        image: "docker-registry.scubbo.org:8843/scubbo/cloudflared_arm64"
+        image: "cloudflare/cloudflared"
         args:
-        # Note that this is a change from the example provided in cloudflared's own manifest.
-        # Not sure if this has changed in a later version, or if this was a change introduced
-        # by the PR to support buildx: https://github.com/cloudflare/cloudflared/pull/618/commits
-        - /usr/local/bin/cloudflared
         - tunnel
-        # Points cloudflared to the config file, which configures what
-        # cloudflared will actually do. This file is created by a ConfigMap
-        # below.
         - --config
-        - /etc/cloudflared/config/config.yaml
+        - /etc/cloudflared/config.yaml
         - --origincert
         - /etc/cloudflared/certs/cert.pem
-#        - --loglevel
-#        - debug
+        #- --loglevel
+        #- debug
         - run
 #  This livenessProbe appears to be shutting down otherwise-healthy tunnels
 #        livenessProbe:
@@ -45,15 +52,17 @@ spec:
 #          periodSeconds: 10
         volumeMounts:
         - name: config
-          mountPath: /etc/cloudflared/config
+          mountPath: /etc/cloudflared
           readOnly: true
-        # Each tunnel has an associated "credentials file" which authorizes machines
-        # to run the tunnel. cloudflared will read this file from its local filesystem,
-        # and it'll be stored in a k8s secret.
+          # Each tunnel has an associated "credentials file" which authorizes machines
+          # to run the tunnel. cloudflared will read this file from its local filesystem,
+          # and it'll be stored in a k8s secret.
         - name: creds
+          # Path matches value in config file below
           mountPath: /etc/cloudflared/creds
           readOnly: true
         - name: certs
+          # Path matches value passed in `--origincert` above
           mountPath: /etc/cloudflared/certs
           readOnly: true
       volumes:
@@ -94,6 +103,7 @@ metadata:
 data:
   config.yaml: |
     # Name of the tunnel you want to run
+    # This is the friendly name. You can also use the UUID, obtainable from https://dash.teams.cloudflare.com -> Access -> Tunnels
     tunnel: avril
     credentials-file: /etc/cloudflared/creds/credentials.json
     # Serves the metrics server under /metrics and the readiness server under /ready
@@ -118,6 +128,8 @@ data:
       service: http://192.168.1.10:3500
     - hostname: tracking.scubbo.org
       service: http://plausible-svc.plausible.svc.cluster.local:8000
+    - hostname: matrix.scubbo.org
+      service: http://dendrite.dendrite.svc.cluster.local:8008
     # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
     # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
     # in the connection from cloudflared to your local service, not from the internet to cloudflared.
