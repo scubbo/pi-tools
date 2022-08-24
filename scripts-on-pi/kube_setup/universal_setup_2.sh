@@ -11,6 +11,20 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 ####
+# Trust self-signed certificate for Docker Registry
+####
+SHARED_CERT_DIR="/usr/local/share/ca-certificates"
+mkdir -p $SHARED_CERT_DIR
+# Must be a cp, not a ln, since this will be accessed by containers (e.g. Drone)
+# which won't be able to access the base file
+#
+# Note that `.crt` is required in order to be picked up by the following command!
+cp /mnt/NAS/certs/live/docker-registry.scubbo.org/cert.pem $SHARED_CERT_DIR/docker-registry.scubbo.org.crt
+# Note for if you're trying to debug this -
+# `update-ca-certificates` resides in /usr/sbin, but will not show up unless `which` is run as root
+update-ca-certificates
+
+####
 # Install Matrix client
 ####
 
@@ -42,3 +56,5 @@ docker run -it -v /home/pi/.matrix:/data matrixcommander/matrix-commander --room
 docker run -it -v /home/pi/.matrix:/data matrixcommander/matrix-commander -m "Hello World, I am $USERNAME!"
 
 # TODO - create a wrapper for all the docker arguments above
+# TODO - make a `m` utility to just quickly send a message (using the saved credentials) without having to load up the docker container each time.
+# I bet we can just curl a url with the appropriate access token or creds as headers!
