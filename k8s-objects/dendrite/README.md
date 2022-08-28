@@ -30,3 +30,15 @@ to set up the (persistent) Matrix server.
 ### Getting logs from initContainer
 
 `kubectl logs $(kubectl get pods -n dendrite -l "app.kubernetes.io/component=primary" -o jsonpath="{.items[0].metadata.name}") -c init-chmod-data`
+
+### Password reset
+
+```
+USERNAME=...
+PASSWORD=...
+NEW_PASSWORD=...
+# https://spec.matrix.org/v1.3/client-server-api/#get_matrixclientv3login
+ACCESS_TOKEN=$(curl -s https://matrix.scubbo.org/_matrix/client/v3/login -d '{"type":"m.login.password","identifier":{"type":"m.id.user","user":"@$USERNAME:matrix.scubbo.org"},"password":"$PASSWORD"}' | jq --raw-output '.access_token')
+# https://spec.matrix.org/v1.3/client-server-api/#post_matrixclientv3accountpassword
+curl -s https://matrix.scubbo.org/_matrix/client/v3/account/password -H "Authorization: Bearer $ACCESS_TOKEN "-d '{"new_password":"$NEW_PASSWORD"}'
+```
