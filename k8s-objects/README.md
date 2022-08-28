@@ -17,3 +17,11 @@ kubectl apply -f dashboard_user_resources
 Grab a Token with `kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}" | pbcopy`
 
 Then you can `kubectl apply -R -f <dir>` whatever directories you want! (Though note that any that declare namespaces, you probably need to create those namespaces first?)
+
+## Helm Charts
+
+Some services are best installed via Helm rather than direct Kubernetes application.
+
+### Matrix
+
+[README.md](dendrite/README.md)
