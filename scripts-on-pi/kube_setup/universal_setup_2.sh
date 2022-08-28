@@ -32,7 +32,7 @@ USERNAME=$(hostname | perl -pe 's/ras/bot-/')
 PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 echo "Run this command on a machine connected to the Kubernetes cluster:"
 echo -n $'kubectl exec -it -n dendrite $(kubectl get pods --namespace dendrite -l "app.kubernetes.io/name=dendrite,app.kubernetes.io/instance=dendrite" -o jsonpath="{.items[0].metadata.name}") '
-echo "-- /usr/bin/create-account -config /etc/dendrite/dendrite.yaml -username $USERNAME -password $PASSWORD"
+echo "-- /usr/bin/create-account -config /etc/dendrite/dendrite.yaml -username $USERNAME -password $PASSWORD -url http://localhost:8008"
 echo
 echo "Press enter when you have done so"
 read
