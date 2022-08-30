@@ -45,6 +45,11 @@ apt-get install -y screen
 ####
 apt install -y fail2ban
 
+raspi-config nonint do_expand_rootfs
+raspi-config nonint do_change_locale en_US.UTF-8
+raspi-config nonint do_wifi_country US
+raspi-config nonint do_hostname "$hostname"
+
 ###
 # Install ssh keys...
 ###
@@ -62,12 +67,6 @@ ssh-keygen -t ed25519 -N "" -C "scubbojj@gmail.com" -f /home/pi/.ssh/id_ed25519
 chown pi:pi /home/pi/.ssh/id_ed25519
 echo "Add this as a trusted key in Github and anywhere else that is appropriate:"
 cat /home/pi/.ssh/id_ed25519.pub
-
-
-raspi-config nonint do_expand_rootfs
-raspi-config nonint do_change_locale en_US.UTF-8
-raspi-config nonint do_wifi_country US
-raspi-config nonint do_hostname "$hostname"
 
 # Slightly different cmdline.txt options - ref
 # https://github.com/me-box/databox/issues/303
