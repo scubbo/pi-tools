@@ -1,5 +1,5 @@
 ```
-curl https://raw.githubusercontent.com/scubbo/pi-tools/main/scripts-on-pi/kube_setup/universal_setup.sh > setup.sh
+curl https://raw.githubusercontent.com/scubbo/pi-tools/main/scripts-on-pi/kube_setup/universal_setup_1.sh > setup.sh
 sudo chmod +x setup.sh
 sudo ./setup.sh
 ```
