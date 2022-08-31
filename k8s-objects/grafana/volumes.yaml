@@ -1,58 +1,30 @@
+# https://grafana.com/docs/grafana/latest/setup-grafana/installation/kubernetes/
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: grafana-db
+  name: grafana-pv
   namespace: grafana
 spec:
   capacity:
-    storage: 5M
+    storage: 1Gi
   accessModes:
     - ReadWriteMany
   nfs:
     server: rassigma.avril
-    path: "/mnt/BERTHA/etc/grafana/grafana-db"
+    path: "/mnt/BERTHA/etc/grafana"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: grafana-db-pvc
+  name: grafana-pvc
   namespace: grafana
 spec:
   storageClassName: ""
-  volumeName: grafana-db
+  volumeName: grafana-pv
   accessModes:
     - ReadWriteMany
-  volumeMode: Filesystem
   resources:
     requests:
-      storage: 5M
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: grafana-config
-  namespace: grafana
-spec:
-  capacity:
-    storage: 100k
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    server: rassigma.avril
-    path: "/mnt/BERTHA/etc/grafana/grafana-config"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: grafana-config-pvc
-  namespace: grafana
-spec:
-  storageClassName: ""
-  volumeName: grafana-config
-  accessModes:
-    - ReadWriteMany
-  volumeMode: Filesystem
-  resources:
-    requests:
-      storage: 100k
+      storage: 1Gi
+
