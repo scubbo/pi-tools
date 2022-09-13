@@ -1,0 +1,6 @@
+# Requires a RabbitMQOperator. See README.md
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: grafana-oncall-rabbitmq-cluster
+  namespace: grafana

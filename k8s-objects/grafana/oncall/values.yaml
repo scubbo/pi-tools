@@ -1,0 +1,66 @@
+# https://github.com/grafana/oncall/tree/dev/helm/oncall
+
+base_url: oncall.grafana.avril
+
+# Grafana itself is installed and managed separately
+grafana:
+  enabled: false
+
+# TODO - docs here: https://github.com/grafana/oncall/tree/dev/helm/oncall#connect-external-mysql
+# have `mariadb.enabled=true`. That seems...wrong?
+mysql:
+  enabled: false
+
+mariadb:
+  enabled: false
+
+externalMysql:
+  host: mysql-grafana-oncall.grafana.svc.cluster.local
+  port: 3306
+  db_name: oncall
+  user: root
+  # password isn't set here - see the README.md guide!
+
+###
+# RabbitMQ
+###
+rabbitmq:
+  enabled: false
+
+externalRabbitmq:
+  # This service is created by the `kubectl apply -f rabbitmq-cluster.yaml` call
+  host: grafana-oncall-rabbitmq-cluster.grafana.svc.cluster.local
+  # user and password are passed at `helm install` time - see README.md!
+
+###
+# Redis
+###
+redis:
+  image:
+    repository: arm64v8/redis
+    tag: latest
+
+# If set to true, installation will try to use LetsEncrypt to create a TLS cert for the installation.
+# Which is a cool feature to have, but I don't plan to expose this externally anyway (for now, at least...),
+# so wouldn't work anyway.
+cert-manager:
+  enabled: false
+
+oncall:
+  slack:
+    enabled: false
+  telegram:
+    enabled: false
+# The above is not actually sufficient to disable the checks for Telegram's URLs, which result in an infinite hang
+# when trying to migrate the database, so we also have to...
+env:
+  - name: FEATURE_SLACK_INTEGRATION_ENABLED
+    value: "false"
+  - name: FEATURE_TELEGRAM_INTEGRATION_ENABLED
+    value: "false"
+
+# Otherwise, this clashes with Traefik (not yet tested and confirmed)
+ingress-nginx:
+  enabled: false
+ingress:
+  enabled: false

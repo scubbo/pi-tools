@@ -1,0 +1,96 @@
+# https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/, though note we have to
+# change the image to be runnable on ARM64
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-grafana-oncall
+  namespace: grafana
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-grafana-oncall
+  namespace: grafana
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - image: arm64v8/mysql
+          name: mysql
+          env:
+            # If you ever change this, bear in mind that the password is set at database-startup - that is, if you
+            # reinitialize on a disk-persisted database, the password change will not take effect.
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oncall-mysql-password
+                  key: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: grafana-oncall-pvc
+        - name: init
+          configMap:
+            name: oncall-mysql-init
+---
+# https://hub.docker.com/_/mysql - "Initializing a Fresh Instance"
+# https://github.com/grafana/oncall/tree/dev/helm/oncall#connect-external-mysql
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oncall-mysql-init
+  labels:
+    name: oncall-mysql-init
+  namespace: grafana
+data:
+  init.sql: "CREATE DATABASE oncall CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-oncall-pv
+  namespace: grafana
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: rassigma.avril
+    path: "/mnt/BERTHA/etc/grafana-oncall"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-oncall-pvc
+  namespace: grafana
+spec:
+  storageClassName: ""
+  volumeName: grafana-oncall-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
