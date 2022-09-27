@@ -51,16 +51,17 @@ oncall:
     enabled: false
   telegram:
     enabled: false
-# The above is not actually sufficient to disable the checks for Telegram's URLs, which result in an infinite hang
-# when trying to migrate the database, so we also have to...
-env:
-  - name: FEATURE_SLACK_INTEGRATION_ENABLED
-    value: "false"
-  - name: FEATURE_TELEGRAM_INTEGRATION_ENABLED
-    value: "false"
 
-# Otherwise, this clashes with Traefik (not yet tested and confirmed)
+# Otherwise, this clashes with K3s' built-in Traefik controllers:
+# `0/3 nodes are available: 1 node(s) didn't have free ports for the requested pod ports. preemption: 0/3 nodes are available: 3 No preemption victims found for incoming pod.`
 ingress-nginx:
   enabled: false
+
 ingress:
-  enabled: false
+  enabled: true
+  tls: null # What's the idiomatic way to choose between checking for object presence, and checking for "<object>.enabled"?
+  # Note that `className` here will not actually take any effect until https://github.com/grafana/oncall/pull/567 is
+  # pushed - the annotation below is the work-around until then (and can be deleted after it's pushed)
+  className: traefik
+  annotations:
+    "kubernetes.io/ingress.class": "traefik"

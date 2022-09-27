@@ -40,10 +40,7 @@ helm install -f values.yaml \
 oncall grafana/oncall
 ```
 
-* Manually install the Ingress (since the Helm chart doesn't permit setting `ingressClassName`, and so it ends up
-    clashing with the existint Traefik installation provided by k3s):
-  * `kubectl apply -f ingress.yaml`
-  * Remember to set an appropriate DNS record!
+Remember to set an appropriate DNS record for `<base_url>` to point to your cluster!
 
 
 ## Uninstalling
