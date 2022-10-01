@@ -25,6 +25,14 @@ to set up the (persistent) Matrix server.
 
 (Ensure you also set up a Cloudflared mapping!)
 
+Create a user with:
+
+```
+kubectl exec -it \
+  $(kubectl -n dendrite get pods -l app.kubernetes.io/name=dendrite -o jsonpath="{.items[0].metadata.name}") \
+  -- /usr/bin/create-account -config /etc/dendrite/dendrite.yaml -url <url with scheme> -username <name> -password <password> -admin
+```
+
 ## Debugging
 
 ### Getting logs from initContainer
