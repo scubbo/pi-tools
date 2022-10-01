@@ -18,7 +18,7 @@ spec:
       # This is janky as heck, but hey, it...."works" :P if you can point me at a better way, please do!
       initContainers:
       - name: dns-setter
-        image: "docker-registry.scubbo.org:8843/scubbo/cloudflare-tunnel-dns:built_in_ci"
+        image: "gitea.scubbo.org/scubbo/cloudflare-tunnel-dns:built_in_ci"
         command: [ "/bin/bash", "-c", "--" ]
         args: [ "./dns_update.sh --config /etc/cloudflared/config.yaml --cert /etc/cloudflared/certs/cert.pem --domain scubbo.org" ]
         volumeMounts:
