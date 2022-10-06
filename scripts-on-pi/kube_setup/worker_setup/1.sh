@@ -47,11 +47,6 @@ cp -L /mnt/NAS/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3
 
 ####
 # Install Drone runner
-#
-# Note that we cannot mount the certificate directly into desired location (`/etc/docker/certs.d/<host:port>/ca.crt`),
-# because the mounting doesn't support paths with colons. Instead we mount to a simple path in the root, then
-# copy it into place in the CI/CD steps: https://gitea.scubbo.org/scubbo/blogContent/src/commit/563a73a5725d94d01201ba443df7f7f051fa8b28/.drone.yml#L22-L23
-# https://stackoverflow.com/questions/72823418/how-to-make-drone-docker-plugin-use-self-signed-certs
 ####
 docker run \
     --volume=/var/run/docker.sock:/var/run/docker.sock \
@@ -60,7 +55,7 @@ docker run \
     --env=DRONE_RPC_SECRET=$droneRPCSecret \
     --env=DRONE_RUNNER_CAPACITY=2 \
     --env=DRONE_RUNNER_NAME=drone-runner \
-    --env=DRONE_RUNNER_VOLUMES=/var/run/docker.sock:/var/run/docker.sock,$(readlink -f /mnt/NAS/certs/live/docker-registry.scubbo.org/chain.pem):/registry_cert.crt \
+    --env=DRONE_RUNNER_VOLUMES=/var/run/docker.sock:/var/run/docker.sock \
     --publish=3502:3000 \
     --restart=always \
     --detach=true \
