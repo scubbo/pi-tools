@@ -1,0 +1,6 @@
+chartRepos:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+chartReference: argo/argo-cd
+chartName: argo-cd
+namespace: argo

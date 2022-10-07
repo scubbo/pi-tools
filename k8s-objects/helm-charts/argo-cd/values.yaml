@@ -1,0 +1,9 @@
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - argo.avril
+      - argo.scubbo.org
+  extraArgs:
+    - "--insecure"
