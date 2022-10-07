@@ -13,6 +13,29 @@ spec:
       labels:
         {{- include "gitea-scubbo.selectorLabels" . | nindent 8 }}
     spec:
+      initContainers:
+        - name: init
+          image: gitea/gitea:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/sbin/configure_gitea.sh"]
+          securityContext:
+            runAsUser: 1000
+          env:
+            - name: GITEA_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: {{ include "gitea-scubbo.fullname" . }}-admin-creds
+            - name: GITEA_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: {{ include "gitea-scubbo.fullname" . }}-admin-creds
+          volumeMounts:
+            - name: init
+              mountPath: /usr/sbin
+            - mountPath: /data
+              name: {{include "gitea-scubbo.fullname" .}}-pv
       containers:
         - name: gitea
           image: gitea/gitea:latest
@@ -25,8 +48,10 @@ spec:
           volumeMounts:
             - mountPath: /etc/timezone
               name: timezone
+              readOnly: true
             - mountPath: /etc/localtime
               name: localtime
+              readOnly: true
             - mountPath: /data
               name: {{ include "gitea-scubbo.fullname" . }}-pv
       volumes:
@@ -41,3 +66,7 @@ spec:
           hostPath:
             path: /etc/localtime
             type: File
+        - name: init
+          secret:
+            secretName: {{ include "gitea-scubbo.fullname" . }}-init
+            defaultMode: 110

@@ -5,3 +5,4 @@ volume:
 service:
   port: 3000
   sshPort: 222
+  sshNodePort: 32420
