@@ -1,0 +1,7 @@
+volume:
+  nfsServer: rassigma.avril
+  nfsPath: /mnt/BERTHA/gitea
+
+service:
+  port: 3000
+  sshPort: 222

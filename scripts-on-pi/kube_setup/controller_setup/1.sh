@@ -55,35 +55,6 @@ debconf-set-selections <<< "postfix postfix/mailname string $(hostname)"
 debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Local only'"
 apt-get install -y postfix
 
-####
-# Set up Gitea
-# https://docs.gitea.io/en-us/install-with-docker/ example requires docker-compose,
-# but that requires a bunch of dependencies - we can do it by hand!
-#
-# Note to self - this didn't work first few times I tried (it only opened up the
-# ssh server and not the web interface), so then I tried installing docker-compose
-# and used the file provided from the website (which worked), and then ran the
-# manual method below again and it worked. Not sure if I just didn't wait long enough
-# the first time around, or what...
-####
-chown pi:pi /mnt/BERTHA/gitea
-# Note - *not* `--internal`, despite the fact that the compose.yml file in the Gitea website
-# includes `external: false`. They are not antonyms! `external` in a Compose file means
-# "this network was created outside of a Compose context", not "this network is not-internal"
-docker network create gitea
-docker run -d --name gitea \
-    --env USER_UID=1000 \
-    --env USER_GID=1000 \
-    --restart=always \
-    --network=gitea \
-    --mount type=bind,src=/mnt/BERTHA/gitea,dst=/data \
-    --mount type=bind,src=/etc/timezone,dst=/etc/timezone,ro \
-    --mount type=bind,src=/etc/localtime,dst=/etc/localtime,ro \
-    -p 3000:3000 \
-    -p 222:22 \
-    gitea/gitea:latest
-# Hopefully the first-time setup will be stored
-# into the persistent storage!
 
 ####
 # Set up Drone CI/CD.
@@ -142,49 +113,6 @@ docker run \
     drone/drone:2
 # (Runners will run on worker nodes)
 echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
-
-
-####
-# Set up container registry - https://docs.docker.com/registry/deploying/
-# (Do this independently of Kubernetes because it's part of bootstrapping the K8s cluster!)
-#
-# Reference https://community.letsencrypt.org/t/how-to-get-crt-and-key-files-from-i-just-have-pem-files/7348/3
-# for the mapping between *.pem files, and .crt/.key files
-#
-# Note that the certificates have already been sourced manually, using the following command
-# (with appropriate port-forwarding):
-#
-# ```
-# sudo docker run -it --rm --name certbot \
-#   -v "/mnt/NAS/certs:/etc/letsencrypt" \
-#   -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
-#   -p 8800:80 -p 8443:443 \
-#   certbot/certbot:arm64v8-latest certonly \
-#   --standalone -d docker-registry.scubbo.org \
-#   -m scubbojj@protonmail.com --agree-tos -n
-# ```
-#
-# Note it's important to create the cert _in_ /mnt/NAS, rather than creating elsewhere and
-# moving them to the NAS, because the process creates relative symlinks.
-#
-# See https://eff-certbot.readthedocs.io/en/stable/using.html#setting-up-automated-renewal
-# for instructions for automated renewal.
-#
-# See https://ubuntu.com/server/docs/security-trust-store for how to install certs
-#
-# Note we cannot host on host port 443, because k8s overrides that.
-# Ensure that DNS server serves IP address of this host for `docker-registry.scubbo.org`
-####
-docker run -d \
-  -p 8843:443 \
-  --restart=always \
-  --name registry \
-  -v /mnt/BERTHA/certs:/certs \
-  -v /mnt/BERTHA/image-registry:/var/lib/registry \
-  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
-  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/live/docker-registry.scubbo.org/cert.pem \
-  -e REGISTRY_HTTP_TLS_KEY=/certs/live/docker-registry.scubbo.org/privkey.pem \
-  registry:2
 
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
 # https://github.com/k3s-io/k3s/issues/1148#issuecomment-641687668 (for TLS certs for private registry)

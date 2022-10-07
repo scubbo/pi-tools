@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitea-scubbo.fullname" . }}
+  labels:
+    {{- include "gitea-scubbo.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "gitea-scubbo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "gitea-scubbo.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: gitea
+          image: gitea/gitea:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: USER_UID
+              value: "1000"
+            - name: USER_GID
+              value: "1000"
+          volumeMounts:
+            - mountPath: /etc/timezone
+              name: timezone
+            - mountPath: /etc/localtime
+              name: localtime
+            - mountPath: /data
+              name: {{ include "gitea-scubbo.fullname" . }}-pv
+      volumes:
+        - name: {{ include "gitea-scubbo.fullname" . }}-pv
+          persistentVolumeClaim:
+            claimName: {{ include "gitea-scubbo.fullname" . }}-pvc
+        - name: timezone
+          hostPath:
+            path: /etc/timezone
+            type: File
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            type: File

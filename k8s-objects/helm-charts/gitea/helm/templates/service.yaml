@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "gitea-scubbo.fullname" . }}
+  labels:
+    {{- include "gitea-scubbo.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 3000
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.sshPort }}
+      targetPort: 22
+      protocol: TCP
+      name: ssh
+  selector:
+    {{- include "gitea-scubbo.selectorLabels" . | nindent 4 }}
