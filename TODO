@@ -1,5 +1,0 @@
-* Set up ssh agent so we don't have to keep giving password when git-ing
-* Set up keyboard/vim so that backspace works
-* Email notification on actions
-* Pipe output of install script to logfile (but keep intentional output)
-* Backup for Prometheus config
