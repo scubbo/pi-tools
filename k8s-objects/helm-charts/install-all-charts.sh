@@ -1,4 +1,4 @@
-set -euxo pipefail
+set -euo pipefail
 
 # Stolen from Docker - https://get.docker.com/
 command_exists() {
@@ -42,8 +42,13 @@ process () {
       args+=" --values values.yaml"
     fi
     eval "helm upgrade --install --create-namespace -n $args"
+    if [ ! $? == "0" ]; then
+      # The following line will print to (actual) stdout, even though (regular)
+      # stdout is being captured into `out/$1.out` (see end of braced-expression)
+      >&3 echo "=== ERROR while processing $1 - check the logs! ==="
+    fi
     popd > /dev/null
-  } >"out/$1.out" 2>"out/$1.err"
+  } 3>&1 >"out/$1.out" 2>"out/$1.err"
 }
 # https://unix.stackexchange.com/a/50695/30828
 export -f addRepo
@@ -55,6 +60,6 @@ if [[ -d "out" ]]; then
 fi
 mkdir -p out/
 
-find . -type d -depth 1 -not -name 'out' -exec bash -c 'set -euxo pipefail; addRepo "$@"' bash {} \;
+find . -type d -depth 1 -not -name 'out' -not -name 'out-old' -exec bash -c 'set -uo pipefail; addRepo "$@"' bash {} \;
 helm repo update
-find . -type d -depth 1 -not -name 'out' -exec bash -c 'set -euxo pipefail; process "$@"' bash {} \;
+find . -type d -depth 1 -not -name 'out' -not -name 'out-old' -exec bash -c 'set -uo pipefail; process "$@"' bash {} \;
