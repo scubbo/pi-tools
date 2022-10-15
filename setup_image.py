@@ -232,7 +232,7 @@ def finalize(args):
     f.write(f'pi:{encoded_password}')
   print('Wrote encoded password to disk')
 
-  # TODO - consider writing to cmdline.txt here, too (see `kube_setup/1.sh`)
+  # TODO - consider writing to cmdline.txt here, too (see `scripts-on-pi/1.sh`)
   # Why am I not doing that immediately? Because it looks like there are some first-time options
   # that I don't want to mess with - initial image, unbooted, reads:
   # `console=serial0,115200 console=tty1 root=PARTUUID=<id> rootfstype=ext4 fsck.repair=yes rootwait quiet init=/usr/lib/raspi-config/init_resize.sh`
