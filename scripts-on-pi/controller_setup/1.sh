@@ -119,6 +119,49 @@ docker run \
 # (Runners will run on worker nodes)
 echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
 
+# Drone CLI is needed for creation of a Prometheus user
+# (https://cogarius.medium.com/3-3-complete-guide-to-ci-cd-pipelines-with-drone-io-on-kubernetes-drone-metrics-with-prometheus-c2668e42b03f
+# "Drone configuration")
+#
+# Again, Helm-ifying this would be great!
+#
+# `command_exists` function taken from https://get.docker.com/
+command_exists() {
+	command -v "$@" > /dev/null 2>&1
+}
+if ! command_exists drone; then
+  curl --silent -L https://github.com/harness/drone-cli/releases/latest/download/drone_linux_arm64.tar.gz | tar zx
+  sudo install -t /usr/local/bin drone
+  rm drone
+fi
+
+scubbo_drone_user_exists() {
+  # https://stackoverflow.com/a/14081072/1040915 - a bare return will return the return value of the previous command
+  [ $(sqlite3 "$droneDir/database.sqlite" 'select count(1) from users where user_login="scubbo";') -eq 1 ]
+  return
+}
+
+while ! scubbo_drone_user_exists; do
+  echo "No 'scubbo' user exists on drone. Go to https://$droneHost and create it."
+done
+# OK, this is janky as heck - but, until I create Drone on Helm, there's no better way I know of to share secrets
+# Note that in the UI and documentation it's called a "token", but the database column is called "user_hash". I hope
+# to heck they're not just hashing the username, otherwise...
+export DRONE_SERVER="https://$droneHost"
+export DRONE_TOKEN=$(sqlite3 "$droneDir/database.sqlite" 'select user_hash from users where user_login="scubbo"')
+if [ "$(drone user ls 2>/dev/null | grep 'prometheus' | wc -l)" -eq 0 ]; then
+  account_token=$(drone user add prometheus --machine | grep 'Generated account token' | cut -d' ' -f4)
+  echo "==========WARNING=========="
+  echo "Prometheus user was created"
+  echo "during this setup process. "
+  echo "You must  make a k8s secret"
+  echo "secret containing the value"
+  echo "$account_token"
+  echo "(See https://cogarius.medium.com/3-3-complete-guide-to-ci-cd-pipelines-with-drone-io-on-kubernetes-drone-metrics-with-prometheus-c2668e42b03f)"
+  echo "==========================="
+fi
+
+
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
 # https://github.com/k3s-io/k3s/issues/1148#issuecomment-641687668 (for TLS certs for private registry)
 # TODO - we do exactly the same thing here in worker_setup, but using a different path because that references
