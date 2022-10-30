@@ -61,6 +61,8 @@ apt-get install -y postfix
 # Note that the docs say they "do not recommend installing Drone and Gitea on the
 # same machine due to network complications", but...we'll see how it goes :shrug:
 # https://docs.drone.io/server/provider/gitea/
+#
+# TODO - it would be _really_ great to migrate this to a Helm-based installation.
 ####
 droneDir="/mnt/BERTHA/drone"
 chown pi:pi $droneDir
@@ -94,22 +96,25 @@ droneRPCSecret=$(openssl rand -hex 16)
 # TODO - should Drone (particularly, runners) be managed via Kubernetes? It would be neater,
 # but then we get into a circular dependency of not being able to build changes if k8s is down.
 # Probably fine, since we can always start Drone manually outside k8s if necessary.
+droneHost="drone.scubbo.org"
 
 # Install Docker Server
+# (Admin-create - https://docs.drone.io/server/user/admin/)
 docker run \
     --volume=$droneDir:/data \
-    --env=DRONE_GITEA_SERVER=http://rassigma.avril:3000 \
+    --env=DRONE_GITEA_SERVER=https://gitea.scubbo.org \
     --env=DRONE_GITEA_CLIENT_ID=$clientId \
     --env=DRONE_GITEA_CLIENT_SECRET=$clientSecret \
     --env=DRONE_RPC_SECRET=$droneRPCSecret \
-    --env=DRONE_SERVER_HOST=drone.scubbo.org \
+    --env=DRONE_SERVER_HOST=$droneHost \
     --env=DRONE_SERVER_PROTO=https \
     --env=DRONE_AGENTS_ENABLED=true \
+    --env=DRONE_USER_CREATE=username:scubbo,admin:true \
     --publish=3500:80 \
     --publish=3501:443 \
-    --restart=always \
     --detach=true \
     --name=drone \
+    --rm \
     drone/drone:2
 # (Runners will run on worker nodes)
 echo "DRONE_RPC_SECRET for runners is $droneRPCSecret"
