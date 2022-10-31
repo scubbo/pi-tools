@@ -123,7 +123,7 @@ data:
     - hostname: blog.scubbo.org
       service: http://blog-svc-cip.blog.svc.cluster.local:8080
     - hostname: gitea.scubbo.org
-      service: http://192.168.1.10:3000
+      service: http://gitea-gitea-scubbo.gitea.svc.cluster.local:3000
     - hostname: drone.scubbo.org
       service: http://192.168.1.10:3500
     - hostname: tracking.scubbo.org
