@@ -125,7 +125,7 @@ data:
     - hostname: gitea.scubbo.org
       service: http://gitea-gitea-scubbo.gitea.svc.cluster.local:3000
     - hostname: drone.scubbo.org
-      service: http://192.168.1.10:3500
+      service: http://drone-drone-scubbo.drone.svc.cluster.local:3500
     - hostname: tracking.scubbo.org
       service: http://plausible-svc.plausible.svc.cluster.local:8000
     - hostname: matrix.scubbo.org

@@ -1,0 +1,20 @@
+drone:
+  server: "drone.scubbo.org"
+  userCreateString: "username:scubbo,admin:true"
+
+volume:
+  nfsServer: rassigma.avril
+  nfsPath: /mnt/BERTHA/drone
+
+service:
+  type: ClusterIP
+  port: 3500
+
+gitea:
+  server: https://gitea.scubbo.org
+  # Secret with keys `clientId` and `clientSecret`
+  oauthSecretName: gitea-oauth-creds
+
+# Set this if you want to use an existing secret for the RPC
+# secret (otherwise, a fresh one will be created if necessary)
+manualRPCSecretName: ""
