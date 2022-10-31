@@ -41,8 +41,7 @@ process () {
     if [[ -f "values.yaml" ]]; then
       args+=" --values values.yaml"
     fi
-    eval "helm upgrade --install --create-namespace -n $args"
-    if [ ! $? == "0" ]; then
+    if ! eval "helm upgrade --install --create-namespace -n $args"; then
       # The following line will print to (actual) stdout, even though (regular)
       # stdout is being captured into `out/$1.out` (see end of braced-expression)
       >&3 echo "=== ERROR while processing $1 - check the logs! ==="
