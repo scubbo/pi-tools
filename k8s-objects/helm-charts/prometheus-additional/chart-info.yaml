@@ -1,0 +1,3 @@
+chartReference: helm/
+chartName: prometheus-additional
+namespace: prometheus

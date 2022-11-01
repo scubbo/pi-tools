@@ -1,0 +1,9 @@
+grafana:
+  enabled: false
+
+# https://cogarius.medium.com/3-3-complete-guide-to-ci-cd-pipelines-with-drone-io-on-kubernetes-drone-metrics-with-prometheus-c2668e42b03f
+# "Kubernetes configuration"
+prometheus:
+  prometheusSpec:
+    secrets:
+      - drone-metrics
