@@ -7,19 +7,10 @@ The [postgresql Helm chart](https://github.com/bitnami/charts/blob/master/bitnam
 Then:
 
 ```
-helm install dendrite k8s-at-home/dendrite \
-    --set dendrite.global.server_name=matrix.scubbo.org \
-    --set clientapi.config.registration_shared_secret=abcdef \
-    --set postgresql.enabled=true \
-    --set postgresql.image.repository=arm64v8/postgres \
-    --set postgresql.image.tag=latest \
-    --set postgresql.primary.persistence.enabled=true \
-    --set postgresql.primary.persistence.existingClaim=claim-for-dendrite-database \
-    --set postgresql.volumePermissions.enabled=true \
-    --set postgresql.volumePermissions.image.registry=docker.io \
-    --set postgresql.volumePermissions.image.repository=busybox \
-    --set postgresql.volumePermissions.image.tag=latest
+helm install dendrite k8s-at-home/dendrite --values dendrite-values.yaml --set-string clientapi.config.registration_disabled=false
 ```
+(I don't know why it's necessary to specify `registration_disabled=false` twice, but hey - it apparently is! ¯\_(ツ)_/¯ )
+(OK, I found out why - it's because setting boolean values in Helm is [a little janky](https://stackoverflow.com/questions/74257084/how-to-pass-false-value-to-helm-default) - but CBA to fix it just for my own use! If other people start using this I'll correct it :P )
 
 to set up the (persistent) Matrix server.
 

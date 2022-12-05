@@ -1,0 +1,30 @@
+dendrite:
+  global:
+    server_name: matrix.scubbo.org
+
+clientapi:
+  config:
+    registration_disabled: "false"
+    registration_shared_secret: abcdef
+    captcha:
+      enabled: true
+      recaptcha_public_key: 6Le8mbgiAAAAAH5wdVzfI43urkYoATMI30uVdjK4
+      # recaptcha_private_key: <Set via secret. Get from https://www.google.com/recaptcha/admin/site/582523324/settings>
+      recaptcha_bypass_secret: ""
+      recaptcha_siteverify_api: https://www.google.com/recaptcha/api/siteverify
+
+
+postgresql:
+  enabled: true
+  image:
+    repository: arm64v8/postgres
+    tag: 14.5
+  primary:
+    persistence:
+      enabled: true
+      existingClaim: claim-for-dendrite-database
+  volumePermissions:
+    image:
+      registry: docker.io
+      repository: busybox
+      tag: latest
