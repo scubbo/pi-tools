@@ -1,0 +1,33 @@
+# Default values for media-share.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+volume:
+  nfsServer: "rassigma.avril"
+  nfsPath: "/mnt/BERTHA/shared-media/media"
