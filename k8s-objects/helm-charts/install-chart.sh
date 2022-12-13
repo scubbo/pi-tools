@@ -15,13 +15,11 @@ addRepo() {
   # https://stackoverflow.com/a/315113/1040915
   {
     pushd "$1" > /dev/null
-    if [[ ! -f "chart-info.yaml" ]]; then
-      echo "Missing required file 'chart-info.yaml"
-      exit 1
+    if [[ -f "chart-info.yaml" ]]; then
+      yq '.chartRepos[] | [.name, .url] | join(" ")' chart-info.yaml | xargs -I {} sh -c "helm repo add {}"
     fi
     # TODO - error checking for incomplete chart-info
 
-    yq '.chartRepos[] | [.name, .url] | join(" ")' chart-info.yaml | xargs -I {} sh -c "helm repo add {}"
     popd > /dev/null
   } >"out/$1.out" 2>"out/$1.err"
 }
@@ -31,16 +29,17 @@ process () {
   # https://stackoverflow.com/a/315113/1040915
   {
     pushd "$1" > /dev/null
+    dir_name=$(basename $1)
     if [[ ! -f "chart-info.yaml" ]]; then
-      echo "Missing required file 'chart-info.yaml"
-      exit 1
+      args="$dir_name $dir_name helm/"
+    else
+      args=$(yq "[.namespace // \"$dir_name\", .chartName // \"$dir_name\", .chartReference // \"helm/\"] | join(\" \")" chart-info.yaml)
     fi
-    # TODO - error checking for incomplete chart-info
 
-    args=$(yq '[.namespace, .chartName, .chartReference] | join(" ")' chart-info.yaml)
     if [[ -f "values.yaml" ]]; then
       args+=" --values values.yaml"
     fi
+
     if ! eval "helm upgrade --install --create-namespace -n $args"; then
       # The following line will print to (actual) stdout, even though (regular)
       # stdout is being captured into `out/$1.out` (see end of braced-expression)

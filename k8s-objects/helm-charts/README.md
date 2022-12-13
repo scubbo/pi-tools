@@ -13,6 +13,8 @@ Naming convention is that each directory contains:
   * `namespace` - namespace to install to
 * `values.yaml` - (possibly absent) argument to `--values`
 
+`chart-info.yaml` is optional, as are the values `chartReference`, `chartName`, and `namespace`. In their absence, `chartReference` will default to `helm/`, and `chartName` and `namespace` to the name of the directory.
+
 Pseudocode, this would result in:
 ```pseudo
 for repo in chartRepos:

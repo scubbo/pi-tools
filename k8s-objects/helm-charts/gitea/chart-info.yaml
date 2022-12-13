@@ -1,3 +1,0 @@
-chartReference: "helm/"
-chartName: "gitea"
-namespace: "gitea"
