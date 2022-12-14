@@ -1,0 +1,38 @@
+pod-gateway:
+  settings:
+    NOT_ROUTED_TO_GATEWAY_CIDRS: "10.42.0.0/16 10.43.0.0/16 192.168.0.0/16"
+    VPN_BLOCK_OTHER_TRAFFIC: true
+  addons:
+    # https://github.com/k8s-at-home/library-charts/blob/2b4e0aa1ef5f8c6ef4ac14c2335fc9a008394ed6/charts/stable/common/templates/addons/vpn/openvpn/_container.tpl
+    # https://github.com/k8s-at-home/library-charts/blob/2b4e0aa1ef5f8c6ef4ac14c2335fc9a008394ed6/charts/stable/common/values.yaml#L477
+    vpn:
+      enabled: true
+
+      type: openvpn
+      openvpn:
+        authSecret: openvpn-creds
+      configFileSecret: openvpn-config
+
+      livenessProbe:
+        exec:
+          # Change "DE" to whatever country your VPN connects to
+          command:
+            - sh
+            - -c
+            - if [ $(curl -s https://ipinfo.io/country) == 'DE' ]; then exit 0; else exit $?; fi
+        initialDelaySeconds: 30
+        periodSeconds: 60
+        failureThreshold: 1
+
+      networkPolicy:
+        enabled: true
+        egress:
+        - ports:
+            - protocol: UDP # Setting settings.VPN_TRAFFIC_PORT is insufficient
+              port: 1194
+          to:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+        - to:
+            - ipBlock:
+                cidr: 10.0.0.0/8
