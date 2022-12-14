@@ -1,0 +1,5 @@
+volume:
+  nfsServer: rassigma.avril
+  nfsPathOmbiConfig: /mnt/BERTHA/etc/ombi
+  nfsPathOmbiData: /mnt/BERTHA/ombi-data
+  nfsPathSonarrConfig: /mnt/BERTHA/etc/sonarr

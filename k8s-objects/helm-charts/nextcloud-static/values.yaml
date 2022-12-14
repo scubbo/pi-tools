@@ -1,0 +1,14 @@
+host: nextcloud.scubbo.org
+extraEnv:
+  # https://github.com/nextcloud/all-in-one/blob/main/reverse-proxy.md
+  - name: SKIP_DOMAIN_VALIDATION
+    value: true
+ingress:
+  className: traefik
+persistence:
+  enabled: true
+  existingClaim: nextcloud-pvc
+  nextcloudData:
+    existingClaim: nextcloud-data-pvc
+metrics:
+  enabled: true

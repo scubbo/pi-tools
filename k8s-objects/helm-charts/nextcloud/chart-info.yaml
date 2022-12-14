@@ -1,0 +1,3 @@
+chartReference: "helm/"
+chartName: "nextcloud"
+namespace: "nextcloud"

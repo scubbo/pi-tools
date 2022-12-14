@@ -1,0 +1,3 @@
+This creates a sort-of "sidecar service", which sits alongside a Drone installation and exposes Prometheus metrics that define the state of the various repos. 
+
+If I were to get really fancy, I could create a single Helm chart which a) defines these resources, and b) depends upon the existing Drone Helm chart, so that the whole thing can be installed from a single chart. But I already have a working Drone setup, and I don't fancy messing with it just yet.

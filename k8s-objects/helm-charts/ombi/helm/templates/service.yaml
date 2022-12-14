@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ombi.fullname" . }}
+  labels:
+    {{- include "ombi.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 3579
+      protocol: TCP
+  selector:
+    {{- include "ombi.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ombi.fullname" . }}-sonarr
+  labels:
+    {{- include "ombi.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.sonarrPort }}
+      targetPort: 8989
+      protocol: TCP
+  selector:
+    {{- include "ombi.selectorLabels" . | nindent 4 }}

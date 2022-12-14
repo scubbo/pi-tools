@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "ombi.fullname" . }}-pv
+  namespace: {{ .Release.Namespace }}
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.volume.nfsServer }}
+    path: {{ .Values.volume.nfsPathOmbiConfig }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ombi.fullname" . }}-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: ""
+  volumeName: {{ include "ombi.fullname" . }}-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "ombi.fullname" . }}-data-pv
+  namespace: {{ .Release.Namespace }}
+spec:
+  capacity:
+    storage: 3T
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.volume.nfsServer }}
+    path: {{ .Values.volume.nfsPathOmbiData }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ombi.fullname" . }}-data-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: ""
+  volumeName: {{ include "ombi.fullname" . }}-data-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3T
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "ombi.fullname" . }}-sonarr-config-pv
+  namespace: {{ .Release.Namespace }}
+spec:
+  capacity:
+    storage: 10M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.volume.nfsServer }}
+    path: {{ .Values.volume.nfsPathSonarrConfig }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ombi.fullname" . }}-sonarr-config-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: ""
+  volumeName: {{ include "ombi.fullname" . }}-sonarr-config-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10M

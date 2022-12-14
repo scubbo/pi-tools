@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drone-scubbo.fullname" . }}
+  labels:
+    {{- include "drone-scubbo.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "drone-scubbo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "drone-scubbo.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: get_access_token
+          image: ubuntu
+          command: ["apt"]
+
+      containers:
+        - name: drone
+          image: gitea.scubbo.org/scubbo/drone-build-status-monitor
+          env:
+            - name: DRONE_DOMAIN
+              value: {{ include "drone-scubbo.fullname" . }}.{{ .Release.Namespace }}
+            - name: ACCESS_TOKEN
+              value: abc
