@@ -1,0 +1,11 @@
+# Note these are _not_ the namespace for the items created by this chart, but rather are the namespaces of pods that will
+# be routed _through_ this VPN
+{{- range (index .Values "pod-gateway" "routed_namespaces") }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ . }}
+  labels:
+    routed-gateway: "true"
+{{- end }}
