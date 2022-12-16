@@ -44,7 +44,11 @@ process () {
       args+=" --values values.yaml"
     fi
 
-    if ! eval "helm upgrade --install --create-namespace -n $args"; then
+    helm_command="helm upgrade --install --create-namespace -n $args"
+    if [ -n "${debug+x}" ]; then
+      >&3 echo "DEBUG - helm_command is $helm_command"
+    fi
+    if ! eval $helm_command; then
       # The following line will print to (actual) stdout, even though (regular)
       # stdout is being captured into `out/$1.out` (see end of braced-expression)
       >&3 echo "=== ERROR while processing $1 - check the logs! ==="
@@ -62,11 +66,12 @@ if [[ -d "out" ]]; then
 fi
 mkdir -p out/
 
-while getopts n:a flag
+while getopts n:a:d flag
 do
   case "${flag}" in
     n) name=${OPTARG};;
     a) all=1;;
+    d) debug=1;;
     *) echo "Unknown flag detected"; exit 1;;
   esac
 done
