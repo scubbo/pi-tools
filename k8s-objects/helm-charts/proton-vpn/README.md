@@ -65,3 +65,9 @@ Useful tools to install:
 apt update -y
 apt install -y traceroute net-tools iputils-ping dnsutils
 ```
+
+## References
+
+* [Values definition for VPN](https://github.com/k8s-at-home/library-charts/blob/2b4e0aa1ef5f8c6ef4ac14c2335fc9a008394ed6/charts/stable/common/values.yaml#L479)
+* [Charts for VPN](https://github.com/k8s-at-home/library-charts/tree/2b4e0aa1ef5f8c6ef4ac14c2335fc9a008394ed6/charts/stable/common/templates/addons/vpn)
+* [Pod Gateway templates](https://github.com/k8s-at-home/charts/tree/master/charts/stable/pod-gateway/templates)
