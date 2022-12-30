@@ -34,7 +34,7 @@ process () {
       args="$dir_name $dir_name helm/"
     else
       args=$(yq "[.namespace // \"$dir_name\", .chartName // \"$dir_name\", .chartReference // \"helm/\"] | join(\" \")" chart-info.yaml)
-      extraArgs=$(yq ".extraArgs" chart-info.yaml)
+      extraArgs=$(yq ".extraArgs // \"\"" chart-info.yaml)
       if [ -n "$extraArgs" ]; then
         args+=" $extraArgs"
       fi
