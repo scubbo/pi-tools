@@ -1,0 +1,16 @@
+initimage:
+  repository: "gitea.scubbo.org/scubbo/drone-build-status-monitor-init"
+  tag: "latest"
+
+mainimage:
+  repository: "gitea.scubbo.org/scubbo/drone-build-status-monitor-main"
+  tag: "latest"
+
+drone:
+  primarydroneusertokensecret:
+    name: "drone-user-tokens-secret"
+    key: "primary-token"
+  metricsdroneusertokensecret:
+    name: "drone-user-tokens-secret"
+    key: "metrics-token"
+  domain: "https://drone.scubbo.org"

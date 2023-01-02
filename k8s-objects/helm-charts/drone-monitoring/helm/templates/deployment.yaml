@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drone-monitoring.fullname" . }}
+  labels:
+    {{- include "drone-monitoring.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "drone-monitoring.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "drone-monitoring.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: {{ .Chart.Name }}-init
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.initimage.repository }}:{{ .Values.initimage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.initimage.pullPolicy }}
+          env:
+            - name: "PRIMARY_DRONE_USER_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.drone.primarydroneusertokensecret.name }}
+                  key: {{ .Values.drone.primarydroneusertokensecret.key }}
+            - name: "METRICS_DRONE_USER_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.drone.metricsdroneusertokensecret.name}}
+                  key: {{ .Values.drone.metricsdroneusertokensecret.key}}
+            - name: "DRONE_DOMAIN"
+              value: {{ .Values.drone.domain }}
+              # Getting "Error: YAML parse error on drone-monitoring/templates/deployment.yaml: error converting YAML to JSON: yaml: line 44: did not find expected '-' indicator"
+              # and CBA to fix that for a personal chart!
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.mainimage.repository }}:{{ .Values.mainimage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.mainimage.pullPolicy }}
+          env:
+            - name: "DRONE_DOMAIN"
+              value: {{ .Values.drone.domain }}
+            - name: "ACCESS_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Values.drone.metricsdroneusertokensecret.name}}
+                  key: {{.Values.drone.metricsdroneusertokensecret.key}}
+          ports:
+            - name: metrics
+              containerPort: 8000
+              protocol: TCP
+            - name: webhook
+              containerPort: 8015
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
