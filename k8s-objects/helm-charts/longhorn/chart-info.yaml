@@ -1,0 +1,5 @@
+chartRepos:
+  - name: longhorn
+    url: https://charts.longhorn.io
+chartReference: longhorn/longhorn
+namespace: longhorn-system
