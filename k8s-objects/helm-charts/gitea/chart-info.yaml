@@ -1,0 +1,4 @@
+chartRepos:
+  - name: gitea-charts
+    url: https://dl.gitea.io/charts/
+chartReference: gitea-charts/gitea

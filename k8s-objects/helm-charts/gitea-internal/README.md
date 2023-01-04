@@ -1,0 +1,1 @@
+Internal Gitea instance, to provide images that are necessary for bootstrapping the cluster, e.g. the cloudflared `initContainer`.
