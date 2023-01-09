@@ -1,2 +1,4 @@
 out/
 out-old/
+**/helm/charts
+Chart.lock
