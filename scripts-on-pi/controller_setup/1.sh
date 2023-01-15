@@ -61,12 +61,6 @@ apt-get install -y postfix
 # `/mnt/NAS/...`. Maybe we should unify by having controller mount its own NFS filesystem?
 mkdir -p /etc/rancher/k3s/
 ln -s /mnt/BERTHA/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
-# Note that, unlike for Docker, you do not need to encode the port in the directory name here -
-# in fact, that directory name is arbitrary (and will be referenced direclty in registries.yaml)
-mkdir -p /etc/rancher/k3s/cert.d/docker-registry.scubbo.org
-cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/chain.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/ca.crt
-cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/cert.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.cert
-cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.key
 
 curl -sfL https://get.k3s.io | sh -s - --config /mnt/BERTHA/etc/rancher/k3s/config.yaml
 # Install krew (kubectl plugin manager) before finishing the script with the
