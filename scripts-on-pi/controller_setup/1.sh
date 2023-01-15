@@ -62,7 +62,58 @@ apt-get install -y postfix
 mkdir -p /etc/rancher/k3s/
 ln -s /mnt/BERTHA/etc/rancher/registries.yaml /etc/rancher/k3s/registries.yaml
 
+# Install k3s...
 curl -sfL https://get.k3s.io | sh -s - --config /mnt/BERTHA/etc/rancher/k3s/config.yaml
+mkdir -p /home/pi/.kube
+chown pi:pi /home/pi/.kube
+cp /etc/rancher/k3s/k3s.yaml /home/pi/.kube/config
+chown pi:pi /home/pi/.kube/config
+
+# ...set up Traefik Ingress
+# https://doc.traefik.io/traefik/providers/kubernetes-ingress/#ingressclass
+cat <<'EOF' | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: traefik
+spec:
+  controller: traefik.io/ingress-controller
+EOF
+
+# ...and configure dashboard (everything else should be done by Helm)
+cat <<'EOF' | kubectl apply -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubernetes-dashboard
+EOF
+
+cat <<'EOF' | kubectl apply -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+cat <<'EOF' | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+
 # Install krew (kubectl plugin manager) before finishing the script with the
 # output that describes how to add other nodes to the kubernetes cluster
 # https://krew.sigs.k8s.io/docs/user-guide/setup/install/
