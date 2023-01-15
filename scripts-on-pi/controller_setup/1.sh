@@ -68,7 +68,7 @@ cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/chain.pem /etc/rancher/k
 cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/cert.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.cert
 cp -L /mnt/BERTHA/certs/live/docker-registry.scubbo.org/privkey.pem /etc/rancher/k3s/cert.d/docker-registry.scubbo.org/client.key
 
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | sh -s - --config /mnt/BERTHA/etc/rancher/k3s/config.yaml
 # Install krew (kubectl plugin manager) before finishing the script with the
 # output that describes how to add other nodes to the kubernetes cluster
 # https://krew.sigs.k8s.io/docs/user-guide/setup/install/
@@ -89,6 +89,6 @@ echo
 echo "==========================="
 echo
 echo "Run the following command on agent nodes after you have created /etc/rancher/k3s/registries.yaml:"
-echo "\`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -\`"
+echo "\`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -s -\`"
 echo "(Don't forget to grab the file from /etc/rancher/k3s/k3s.yaml, change 127.0.0.1 to appropriate hostname, and save on laptop in ~/.kube/config!)"
 echo
