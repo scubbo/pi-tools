@@ -136,4 +136,5 @@ echo
 echo "Run the following command on agent nodes after you have created /etc/rancher/k3s/registries.yaml:"
 echo "\`curl -sfL https://get.k3s.io | sudo K3S_URL=https://$ipAddr:6443 K3S_TOKEN=$token sh -s -\`"
 echo "(Don't forget to grab the file from /etc/rancher/k3s/k3s.yaml, change 127.0.0.1 to appropriate hostname, and save on laptop in ~/.kube/config!)"
+echo "(You also probably want to \`kubectl -n kubernetes-dashboard create token admin-user\` and save the corresponding token in the config YAML file under \`users[0].user.token\`)"
 echo
