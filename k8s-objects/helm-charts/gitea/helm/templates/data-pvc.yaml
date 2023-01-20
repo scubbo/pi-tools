@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "gitea.fullname" . }}-pv
+  namespace: {{ .Release.Namespace }}
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.dataVolume.nfsServer }}
+    path: {{ .Values.dataVolume.nfsPath }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitea-data-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: ""
+  volumeName: {{ include "gitea.fullname" . }}-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
