@@ -1,0 +1,89 @@
+# This script was originally provided by a standalone
+# package which was built and deployed by my self-hosted
+# infrastructure, but that led to a circular dependency
+# when cold-starting my setup:
+# * without this script, the setup to make services available
+#     from the external internet doesn't start up
+# * without externally-available services, the Cloudflared pods
+#     can't pull the image containing this script
+#
+# I _could_ get around this by setting up an internal-only Gitea
+# repository and image registry _purely_ for holding this image,
+# but (particularly with Gitea's inability to support multiple names,
+# (https://github.com/go-gitea/gitea/issues/22033), and the difficulty
+# of setting up TLS certs - this seems like a simpler way to go.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-dns-update-script
+  namespace: cloudflared
+data:
+  update.sh: |
+    #!/bin/bash
+    
+    set -eux
+    
+    # https://stackoverflow.com/a/14203146/1040915
+    POSITIONAL_ARGS=()
+    
+    while [[ $# -gt 0 ]]; do
+    case $1 in
+    --config)
+    # Provide a path to the Cloudflared Config file.
+    # Required, since we need to parse the config file to find tunnel name.
+    # (If I was less lazy, I would implement cloudflared-like behaviour to search
+    # the standard locations if absent. But I am, so I didn't :P )
+    CONFIG="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    --cert)
+    # Provide a path to the Cloudflared certificate.
+    # If absent, Cloudflared will search the standard locations (as above).
+    # ([`/etc/cloudflared/`, `/usr/local/etc/cloudflared`, `$HOME/.cloudflared`])
+    CERT="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -d|--domain)
+    # If set, only try to update DNS for names that are subdomains of this domain.
+    # If not set, try to update all names.
+    DOMAIN="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -*|--*)
+    echo "Unknown option $1"
+    exit 1
+    ;;
+    *)
+    POSITIONAL_ARGS+=("$1") # save positional arg
+    shift # past argument
+    ;;
+    esac
+    done
+    
+    if [[ -z $CONFIG ]]; then
+    echo "Path to config file must be provided";
+    exit 1;
+    fi
+    
+    set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+    
+    TUNNEL_NAME=$(yq ".tunnel" $CONFIG);
+    
+    COMMAND_STRING="yq \".ingress[].hostname | select(. != null)";
+    if [[ -n "$DOMAIN" ]]; then
+    COMMAND_STRING="$COMMAND_STRING | select (. == \\\"*$DOMAIN\\\")";
+    fi
+    # Note closing double-quote, from start of COMMAND_STRING
+    COMMAND_STRING="$COMMAND_STRING\" $CONFIG | xargs -I {} cloudflared tunnel";
+    if [[ -n "$CERT" ]]; then
+    COMMAND_STRING="$COMMAND_STRING --origincert $CERT";
+    fi
+    COMMAND_STRING="$COMMAND_STRING route dns $TUNNEL_NAME {}";
+    
+    
+    # I don't know enough about bash security to know whether there's a risk of injection here:
+    # be careful where you accept script parameters from!
+    eval $COMMAND_STRING

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-dns-overall-script
+  namespace: cloudflared
+data:
+  overall.sh: |
+    #!/bin/bash
+    set -eux
+
+    /dns_update/setup.sh
+    /dns_update/update.sh $@

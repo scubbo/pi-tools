@@ -1,0 +1,32 @@
+# In a perfect world, this setup would happen in Dockerfile
+# image-creation - but, as described in `dns-update-script`,
+# this would create a circular dependency.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-dns-setup-script
+  namespace: cloudflared
+data:
+  setup.sh: |
+    # Instructions from https://pkg.cloudflare.com/
+    apt update && apt -y upgrade
+    apt install -y wget curl
+    
+    ######
+    ## Install cloudflared
+    ######
+    mkdir -p --mode=0755 /usr/share/keyrings
+    curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg\
+      | tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared buster main' \
+      | tee /etc/apt/sources.list.d/cloudflared.list
+    apt update && apt install cloudflared
+    
+    
+    ######
+    ## Install yq (for parsing YAML)
+    ######
+    
+    # https://github.com/mikefarah/yq - I tried switching to `curl -o -` but that gave no output?
+    wget https://github.com/mikefarah/yq/releases/download/v4.18.1/yq_linux_arm64.tar.gz -O - 2>/dev/null |\
+      tar xz && mv yq_linux_arm64 /usr/bin/yq
