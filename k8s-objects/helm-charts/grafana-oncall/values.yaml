@@ -2,10 +2,16 @@ global:
   storageClass: longhorn
 
 oncall:
-  base_url: grafana.avril
+  base_url: oncall.grafana.avril
   externalGrafana:
-    url: grafana.avril
+    url: http://grafana.avril
   fullnameOverride: "oncall-ovrd" # Without this, there are clashes between resources (ServiceAccounts, Secrets) that are similarly named between Oncall itself and the underlying Grafana templates. Also this needs to b e short otherwise the batch jobs created have names that are too long
+  env:
+    - name: FEATURE_TELEGRAM_INTEGRATION_ENABLED
+      value: "true"
+
+  image:
+    tag: "v1.1.19"
 
   cert-manager:
     enabled: false
@@ -23,9 +29,12 @@ oncall:
     enabled: false
 
   externalRabbitmq:
-    host: "grafana-oncall-rabbitmq-cluster" # Do we need to set port?
+    # Experimentation suggests that the FQDN is required - not `grafana-oncall-rabbitmq-cluster[.grafana]` -
+    # otherwise a "Name does not resolve" error occurs
+    host: "grafana-oncall-rabbitmq-cluster.grafana.svc.cluster.local"
+    port: 5672
     # This secret is created by the cluster defined in `rabbitmq-cluster.yaml`
-    existingSecret: "grafana-oncall-cluster-default-user"
+    existingSecret: "grafana-oncall-rabbitmq-cluster-default-user"
 
   redis:
     image:
@@ -45,14 +54,25 @@ oncall:
 #        repository: arm64v8/bash
 #        tag: 5.2
 
+  # Have to use Postgres because the Mysql setup doesn't permit using existingSecret
   database:
     type: postgresql
 
-  postgresql:
+  externalPostgresql:
+    # Full name required otherwise "name does not resolve" from the database migration pods
+    #host: grafana-oncall-postgresql-hl.grafana.svc.cluster.local # Difference between headless and non-headless: https://stackoverflow.com/a/63930743/1040915
+    # Above gives "DNS fwd/rev mismatch
+    host: grafana-oncall-postgresql-0.grafana-oncall-postgresql-hl.grafana.svc.cluster.local
+    port: 5432
+    db_name: oncall
+    existingSecret: postgres-auth-secret # Must match postgresql.auth.existingSecret
+    user: postgres # Cannot use the custom-created user, authentication issues arise
+
+  telegram:
     enabled: true
-    image:
-      repository: arm64v8/postgres
-      tag: 15.1
+    existingSecret: telegram-auth-secret
+    tokenKey: token
+    webhookUrl: https://oncall-grafana.scubbo.org
 
 
 
@@ -68,8 +88,21 @@ rabbitmq-cluster-operator:
       repository: mohsinonxrm/rabbitmq-messaging-topology-operator
       tag: 1.9.0
   rabbitmqImage:
-    # Inconsistent structure, because of course.
+    # Inconsistent structure in how to define images, because of course.
     # I _really_ dislike Bitnami's refusal to support arm64...
     repository: arm64v8/rabbitmq
     tag: 3.11
+
+postgresql:
+  image:
+    repository: arm64v8/postgres
+    tag: 15.1
+  auth:
+    existingSecret: postgres-auth-secret # Must match oncall.externalMysql.user
+  primary:
+    initdb:
+      scripts:
+        01_setup.sql: "CREATE DATABASE oncall WITH ENCODING UTF8"
+        # https://www.postgresql.org/docs/current/multibyte.html
+        # https://www.postgresql.org/docs/current/collation.html
 

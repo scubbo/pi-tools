@@ -13,6 +13,6 @@ dependencies:
   - name: rabbitmq-cluster-operator
     version: 3.2.0
     repository: https://charts.bitnami.com/bitnami
-#  - name: mysql
-#    version: 9.4.8
-#    repository: https://charts.bitnami.com/bitnami
+  - name: postgresql
+    version: 12.1.9
+    repository: https://charts.bitnami.com/bitnami
