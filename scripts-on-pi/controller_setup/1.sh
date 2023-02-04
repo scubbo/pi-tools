@@ -7,6 +7,10 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
+echo "STOP! Update the k3s install to set a --data-dir on the attached hhard drive first (see [here](https://docs.k3s.io/reference/server-config)), otherwise you'll regret how full your SD card gets!"
+echo "In both the server setup and in the instructions for agent setup"
+exit 1
+
 # https://unix.stackexchange.com/a/146341
 export DEBIAN_FRONTEND=noninteractive
 
