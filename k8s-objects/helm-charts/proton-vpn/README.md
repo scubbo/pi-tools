@@ -23,7 +23,7 @@ kubectl -n proton-vpn create secret generic openvpn-config --from-file=vpnConfig
 
 ### OpenVPN creds
 
-Fetch from [here](https://account.protonvpn.com/account) (note - these are different from your OpenVPN credentials!), then upload with:
+Fetch from [here](https://account.protonvpn.com/account) (note - these are different from your ProtonVPN credentials!), then upload with:
 
 ```
 kubectl -n proton-vpn create secret generic openvpn-creds --from-literal="VPN_AUTH=<username>;<password>"
