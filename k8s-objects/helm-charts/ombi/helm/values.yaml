@@ -89,3 +89,15 @@ volume:
   configNFSServer: ""
   dataNFSServer: ""
   dataNFSPath: ""
+
+ombi:
+  enabled: true
+
+sonarr:
+  enabled: true
+
+radarr:
+  enabled: true
+
+nzbget:
+  enabled: true
