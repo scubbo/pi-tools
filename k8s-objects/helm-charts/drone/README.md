@@ -5,3 +5,9 @@ TODO:
 * Create `gitea_password` Organization Secret at init.
 
 Create secret named `gitea-oauth-creds`, with keys `DRONE_GITEA_CLIENT_ID` and `DRONE_GITEA_CLIENT_SECRET`. Remember also to create an Organization Secret named `gitea_password` for pulling.
+
+For MTU problem diagnosis:
+
+https://github.com/gliderlabs/docker-alpine/issues/307#issuecomment-634852419
+
+https://liejuntao001.medium.com/fix-docker-in-docker-network-issue-in-kubernetes-cc18c229d9e5

@@ -15,3 +15,9 @@ drone-runner:
   env:
     DRONE_RPC_SECRET: rpc-secret
     DRONE_RPC_HOST: drone-drone-server:3500 # This is the name of the service for the runner
+    DRONE_RUNNER_NETWORK_OPTS: "com.docker.network.driver.mtu:1450"
+  dind:
+    commandArgs:
+      - "--host"
+      - "tcp://localhost:2375"
+      - "--mtu=1450"
