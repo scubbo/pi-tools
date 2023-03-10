@@ -12,3 +12,13 @@ prometheus:
     ingressClassName: traefik
     hosts:
       - prometheus.avril
+
+
+# https://stackoverflow.com/a/73063356/1040915
+# https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-node-exporter/templates/servicemonitor.yaml#L49-L52
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      relabelings:
+        - sourceLabels: [ __meta_kubernetes_pod_node_name ]
+          targetLabel: node_name
