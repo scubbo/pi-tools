@@ -12,6 +12,16 @@ prometheus:
     ingressClassName: traefik
     hosts:
       - prometheus.avril
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+        selector: {}
 
 
 # https://stackoverflow.com/a/73063356/1040915
