@@ -41,6 +41,7 @@ service:
   port: 3579
   sonarrPort: 8989
   radarrPort: 7878
+  prowlarrPort: 9696
   nzbgetWebPort: 6789
 
 ingress:
@@ -97,6 +98,9 @@ sonarr:
   enabled: true
 
 radarr:
+  enabled: true
+
+prowlarr:
   enabled: true
 
 nzbget:

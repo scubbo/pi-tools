@@ -78,6 +78,16 @@ spec:
                 name: {{ include "ombi.fullname" . }}-radarr
                 port:
                   number: {{ .Values.service.radarrPort }}
+    - host: prowlarr.avril
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{include "ombi.fullname" .}}-prowlarr
+                port:
+                  number: {{.Values.service.prowlarrPort}}
     - host: nzbget.avril
       http:
         paths:

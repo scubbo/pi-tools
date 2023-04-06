@@ -109,6 +109,32 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  name: {{ include "ombi.fullname" . }}-prowlarr-config-pv
+spec:
+  capacity:
+    storage: 10M
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ $.Values.volume.configNFSServer }}
+    path: /mnt/BERTHA/etc/prowlarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ombi.fullname" . }}-prowlarr-config-pvc
+spec:
+  storageClassName: ""
+  volumeName: {{ include "ombi.fullname" . }}-prowlarr-config-pv
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10M
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
   name: {{ include "ombi.fullname" . }}-nzbget-config-pv
 spec:
   capacity:

@@ -86,6 +86,24 @@ spec:
             - mountPath: /data
               name: ombi-data
         {{- end -}}
+        {{if .Values.prowlarr.enabled}}
+        - name: prowlarr
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12}}
+          image: "lscr.io/linuxserver/prowlarr:latest"
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          resources:
+            {{- toYaml .Values.resources | nindent 12}}
+          volumeMounts:
+            - mountPath: /config
+              name: prowlarr-config
+            - mountPath: /data
+              name: ombi-data
+        {{- end -}}
         {{ if .Values.nzbget.enabled }}
         - name: nzbget
           securityContext:
@@ -128,6 +146,9 @@ spec:
         - name: radarr-config
           persistentVolumeClaim:
             claimName: {{ include "ombi.fullname" . }}-radarr-config-pvc
+        - name: prowlarr-config
+          persistentVolumeClaim:
+            claimName: {{ include "ombi.fullname" . }}-prowlarr-config-pvc
         - name: nzbget-config
           persistentVolumeClaim:
             claimName: {{include "ombi.fullname" .}}-nzbget-config-pvc
