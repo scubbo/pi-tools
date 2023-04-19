@@ -26,3 +26,10 @@ volumes:
       nfs:
         server: rasnu2.avril
         path: "/mnt/NEW_BERTHA/ombi-data/media"
+
+metricsImage:
+  repository: gitea.scubbo.org/scubbo/jellyfin-library-count-prometheus-exporter
+  tag: latest
+
+metrics:
+  apiUrl: "http://jellyfin.avril"
