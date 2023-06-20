@@ -1,7 +1,0 @@
-chartName: cert-manager
-chartReference: jetstack/cert-manager
-namespace: security
-chartRepos:
-  - name: jetstack
-    url: https://charts.jetstack.io
-extraArgs: "--set installCRDs=true"

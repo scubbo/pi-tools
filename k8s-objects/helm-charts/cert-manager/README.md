@@ -1,3 +1,0 @@
-Dependency of (among other things) `proton-vpn` - but CRDs will not be installed if this chart is a dependency, so we install it directly here.
-
-See [here](https://cert-manager.io/docs/installation/helm/). Note that this is (as of the time of writing) untested (that is - I installed directly with a `helm install` command), and so it's not certain whether `installCRDs: true` in `values.yaml` is sufficient (examples in the demonstration only ever use the CLI flag approach). Try it and see!
