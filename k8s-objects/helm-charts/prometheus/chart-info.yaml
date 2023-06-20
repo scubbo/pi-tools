@@ -1,6 +1,0 @@
-chartRepos:
-  - name: prometheus-community
-    url: https://prometheus-community.github.io/helm-charts
-chartReference: prometheus-community/kube-prometheus-stack
-# I tried using this chart, replicating https://cogarius.medium.com/3-3-complete-guide-to-ci-cd-pipelines-with-drone-io-on-kubernetes-drone-metrics-with-prometheus-c2668e42b03f, but it kept leading to an unfixable issue
-#chartReference: prometheus-community/prometheus
