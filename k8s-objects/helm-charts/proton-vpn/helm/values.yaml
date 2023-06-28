@@ -1,7 +1,0 @@
-pod-gateway:
-  routed_namespaces:
-    - "vpn"
-  settings:
-    # https://github.com/k8s-at-home/charts/tree/master/charts/stable/pod-gateway
-    VPN_INTERFACE: tun0 # For OpenVPN. For Wireguard, use `wg0`
-    VPN_TRAFFIC_PORT: 1194 # UDP port - which is generally preferred over TCP. If you use TCP, 443 is probably correct
