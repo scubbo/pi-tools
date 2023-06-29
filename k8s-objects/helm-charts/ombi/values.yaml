@@ -1,4 +1,0 @@
-volume:
-  configNFSServer: rassigma.avril
-  dataNFSServer: rasnu2.avril
-  dataNFSPath: /mnt/NEW_BERTHA/ombi-data
