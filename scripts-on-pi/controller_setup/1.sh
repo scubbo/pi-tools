@@ -115,6 +115,8 @@ subjects:
   namespace: kubernetes-dashboard
 EOF
 
+# https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#manually-create-a-long-lived-api-token-for-a-serviceaccount
+# Creates a non-expiring token, which you can add to `~/.kube/config` to ease login
 cat <<'EOF' | kubectl apply -f -
 apiVersion: v1
 kind: Secret
