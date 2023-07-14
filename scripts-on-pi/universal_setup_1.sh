@@ -9,6 +9,7 @@ fi
 
 echo "STOP! Update the k3s install to set a --data-dir on the attached hhard drive first (see [here](https://docs.k3s.io/reference/server-config)), otherwise you'll regret how full your SD card gets!"
 echo "Also, for (at least) PowerEdge servers, you need to set 'K3S_RESOLV_CONF=/etc/resolv.conf' in the env-vars (first time around you hacked it by putting it in the command directly, but really that shoudl be in a persisted env file) - see https://github.com/longhorn/longhorn/issues/3109"
+echo "Or maybe /run/systemd/resolve/resolv.conf ?"
 exit 1
 
 
