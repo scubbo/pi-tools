@@ -2,3 +2,7 @@ ingress:
   enabled: true
   ingressClassName: traefik
   host: longhorn.avril
+
+defaultSettings:
+  defaultDataPath: "/mnt/HDD/longhorn"
+

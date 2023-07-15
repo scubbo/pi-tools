@@ -1,0 +1,76 @@
+global:
+  storageClass: longhorn
+storageClass: longhorn
+
+base_url: oncall.grafana.avril
+externalGrafana:
+  url: http://grafana.avril
+fullnameOverride: "oncall-ovrd" # Without this, there are clashes between resources (ServiceAccounts, Secrets) that are similarly named between Oncall itself and the underlying Grafana templates. Also this needs to b e short otherwise the batch jobs created have names that are too long
+
+image:
+  tag: "v1.1.19"
+
+cert-manager:
+  enabled: false
+
+grafana:
+  enabled: false
+
+ingress:
+  enabled: false
+
+ingress-nginx:
+  enabled: false
+
+rabbitmq:
+  enabled: true
+  image:
+    repository: rabbitmq
+    tag: 3.10.10
+  auth:
+    username: user
+    password: user
+  extraEnvVars:
+    - name: RABBITMQ_DEFAULT_USER
+      value: user
+    - name: RABBITMQ_DEFAULT_PASS
+      value: user
+
+redis:
+  image:
+    repository: arm64v8/redis
+    tag: 7.0
+
+database:
+  type: mysql
+
+# postgresql:
+#   enabled: true
+#   image:
+#     repository: arm64v8/postgres
+#     tag: 15.3
+  # auth:
+  #   postgresPassword: abc
+  #   username: iamauser
+  #   password: passsword
+  #   database: oncall
+
+
+# mariadb:
+#   enabled: false
+
+mariadb:
+  enabled: true
+  image:
+    repository: arm64v8/mysql
+    tag: 8.0
+#   auth:
+#     database: oncall
+#     username: oncall-user
+#     rootPassword: foobar123
+#   extraEnvVars:
+#     - name: MYSQL_ROOT_PASSWORD
+#       value: foobar
+
+
+
