@@ -5,4 +5,4 @@ ingress:
 
 defaultSettings:
   defaultDataPath: "/mnt/HDD/longhorn"
-
+  reclaimPolicy: Retain
