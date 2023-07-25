@@ -41,6 +41,11 @@ gitea:
     arguments: []
     diagnosticMode:
       enabled: false
+    nodeAffinityPreset:
+      type: hard
+      key: kubernetes.io/arch
+      values:
+        - arm64
 
   postgresql:
     enabled: true
@@ -48,4 +53,9 @@ gitea:
       # Bitnami doesn't support ARM64: https://github.com/bitnami/charts/issues/7305
       repository: "arm64v8/postgres"
       tag: "15.1"
-
+    primary:
+      nodeAffinityPreset:
+        type: hard
+        key: kubernetes.io/arch
+        values:
+          - arm64
