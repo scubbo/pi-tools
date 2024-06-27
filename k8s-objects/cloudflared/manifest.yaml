@@ -167,6 +167,8 @@ data:
       service: http://mix256-svc.mix256.svc.cluster.local:8080
     - hostname: oncall-grafana.scubbo.org
       service: http://oncall-ovrd-engine.grafana.svc.cluster.local:8080
+    - hostname: edh-elo.scubbo.org
+      service: http://edh-elo.edh-elo.svc.cluster.local:8000
     # This rule sends traffic to the built-in hello-world HTTP server. This can help debug connectivity
     # issues. If hello.example.com resolves and tunnel.example.com does not, then the problem is
     # in the connection from cloudflared to your local service, not from the internet to cloudflared.
