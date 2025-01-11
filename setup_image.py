@@ -39,9 +39,9 @@ IMAGE_TYPES = {
 # Not worth importing BeautifulSoup just for a little bit of finding within html
 DIRECTORY_SEARCH_REGEX = '<tr>(.*?)</tr>'
 NAME_WITHIN_ROW_REGEX = '<td><a href="(.*?)">'
-FILE_NAME_REGEX = '<td><a href="(.*?\.xz)">'
+FILE_NAME_REGEX = '<td><a href="(.*?\\.xz)">'
 # Regex for a different purpose - for parsing `diskutil list`
-DISK_NUMBER_REGEX = '/dev/disk(\d).*'
+DISK_NUMBER_REGEX = '/dev/disk(\\d).*'
 
 
 def create(args):
@@ -211,9 +211,9 @@ def finalize(args):
 
     # TODO - set hostname: https://techexplorations.com/guides/rpi/begin/raspberry-pi-hostname/
     disk_number_and_info = _find_disk_number_and_info()
-    Path('/Volumes/boot/ssh').touch()
+    Path('/Volumes/bootfs/ssh').touch()
     if not args.no_wifi:
-        with open('/Volumes/boot/wpa_supplicant.conf', 'w') as f:
+        with open('/Volumes/bootfs/wpa_supplicant.conf', 'w') as f:
             f.write(f'''ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
   update_config=1
   country=US
@@ -232,7 +232,7 @@ def finalize(args):
     # Note the below required OpenSSL version >=1.1 -
     # https://ubuntu101.co.za/osx-and-macos/homebrew-missing-sha512sum-sha256sum-macos/
     encoded_password = check_output(['openssl', 'passwd', '-6', args.password], encoding='UTF-8').strip()
-    with open('/Volumes/boot/userconf', 'w') as f:
+    with open('/Volumes/bootfs/userconf', 'w') as f:
         f.write(f'pi:{encoded_password}')
     print('Wrote encoded password to disk')
 
