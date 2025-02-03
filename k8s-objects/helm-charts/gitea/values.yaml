@@ -19,6 +19,17 @@ gitea:
     className: traefik
     annotations:
       ingress.kubernetes.io/custom-request-headers: "Host: gitea.scubbo.org"
+      # Without this, I was getting `413 Request Entity Too Large` errors
+      # https://stackoverflow.com/questions/62657398/how-to-set-max-request-body-size-in-traefik-ingress-controller-for-kubernetes
+      # originally put me on to it, though there's more documentation in
+      # https://doc.traefik.io/traefik/middlewares/http/buffering/#memrequestbodybytes,
+      # though that didn't actually show to set the value on the ingress itself.
+      #
+      # In the end I gave up and used Copilot :'(
+      #
+      # `maxrequestbodybytes` chosen by finding the size of the image I'm trying to upload (1.57GB) and adding 20% buffer
+      # `memrequestbodybytes` chosen by keeping it in-proportion with `maxrequest` from example values (approx. 2x)
+      traefik.ingress.kubernetes.io/max-request-body-bytes: "1884000000"
     hosts:
       - host: gitea.avril
         paths:
