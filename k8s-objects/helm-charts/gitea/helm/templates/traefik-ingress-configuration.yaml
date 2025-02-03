@@ -1,0 +1,19 @@
+# Without this, I was getting `413 Request Entity Too Large` errors
+#
+# https://stackoverflow.com/questions/62657398/how-to-set-max-request-body-size-in-traefik-ingress-controller-for-kubernetes
+# originally put me on to it, but final documentation found in
+# https://doc.traefik.io/traefik/middlewares/http/buffering/#memrequestbodybytes
+#
+# `maxrequestbodybytes` chosen by finding the size of the image I'm trying to upload (1.57GB) and adding 20% buffer
+# `memrequestbodybytes` chosen by keeping it in-proportion with `maxrequest` from example values (approx. 2x)
+#
+# Requires installing the Middleware CRDs:
+# kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: trafik-middleware-max-bytes-setting
+spec:
+  buffering:
+    maxRequestBodyBytes: 1884000000
+    memRequestBodyBytes: 3768000000
