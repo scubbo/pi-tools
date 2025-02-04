@@ -4,14 +4,16 @@ dataVolume:
 
 gitea:
   global:
-    storageClass: longhorn
+    storageClass: freenas-iscsi-csi
 
   image:
-    tag: "1.18.0"
+    tag: "1.19.2"
 
   persistence:
     enabled: true
-    existingClaim: gitea-data-pvc
+    create: false
+    # existingClaim: gitea-data-pvc # old name
+    claimName: gitea-data-pvc
 
   ingress:
     enabled: true
@@ -46,21 +48,6 @@ gitea:
       packages:
         ENABLED: "true"
 
-
-  memcached:
-    # Since Bitnami don't support ARM64/Raspberries Pi
-    image:
-      repository: "arm64v8/memcached"
-      tag: "1.6.17"
-    arguments: []
-    diagnosticMode:
-      enabled: false
-    nodeAffinityPreset:
-      type: hard
-      key: kubernetes.io/arch
-      values:
-        - arm64
-
   postgresql:
     enabled: true
     image:
@@ -73,3 +60,6 @@ gitea:
         key: kubernetes.io/arch
         values:
           - arm64
+
+  postgresql-ha:
+    enabled: false
