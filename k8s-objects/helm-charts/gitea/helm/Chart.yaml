@@ -9,4 +9,4 @@ appVersion: "1.19.2"
 dependencies:
   - name: gitea
     repository: https://dl.gitea.io/charts/
-    version: "9.6.0"
+    version: "10.6.0"

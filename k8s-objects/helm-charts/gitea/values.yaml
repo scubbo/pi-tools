@@ -51,15 +51,20 @@ gitea:
   postgresql:
     enabled: true
     image:
-      # Bitnami doesn't support ARM64: https://github.com/bitnami/charts/issues/7305
-      repository: "arm64v8/postgres"
-      tag: "15.1"
+      tag: "16.6.0-debian-12-r2"
     primary:
       nodeAffinityPreset:
         type: hard
         key: kubernetes.io/arch
         values:
-          - arm64
+          # Bitnami doesn't support ARM64: https://github.com/bitnami/charts/issues/7305
+          - amd64
 
   postgresql-ha:
     enabled: false
+
+  redis-cluster:
+    # As of Chart version 10.0.0, Gitea Helm chart maintainers recommend pinning images of dependencies
+    # https://gitea.com/gitea/helm-chart#dependency-versioning
+    image:
+      tag: 7.2.3-debian-11-r1
