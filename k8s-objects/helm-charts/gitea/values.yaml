@@ -7,7 +7,7 @@ gitea:
     storageClass: freenas-iscsi-csi
 
   image:
-    tag: "1.19.2"
+    tag: "1.23.4"
 
   persistence:
     enabled: true
@@ -68,3 +68,42 @@ gitea:
     # https://gitea.com/gitea/helm-chart#dependency-versioning
     image:
       tag: 7.2.3-debian-11-r1
+
+  actions:
+    enabled: true
+    provisioning:
+      enabled: true
+    statefulset:
+      persistence:
+        size: 1Gi
+      # Unfortunately we need to specify the label->image mappings, rather than being able to specify images in the
+      # workflow definitions.
+      # Consistent with GitHub Actions implementations, and I guess it is a sensible restriction for a multi-user
+      # platform to prevent arbitrary execution (though, tbh, arbitrary execution is in some sense the point of a CI
+      # system).
+      actRunner:
+        config: |
+          log:
+            level: debug
+          cache:
+            # Probably want to change this?
+            enabled: false
+          runner:
+            labels:
+              - "ubuntu-latest:docker://gitea/runner-images:ubuntu-latest"
+          # Much of the below is taken from https://gitea.com/gitea/act_runner/issues/280#issuecomment-898726
+          # on how to run DinD
+          container:
+            # I'm surprised that `privileged: true` isn't required, since
+            # https://gitea.com/gitea/act_runner/src/branch/main/internal/pkg/config/config.example.yaml#L68 says it
+            # should be required for DinD.
+            valid_volumes:
+              - /certs
+            # `docker_host` is mentioned in https://gitea.com/gitea/act_runner/src/branch/main/internal/pkg/config/config.example.yaml#L92,
+            # but I haven't tried that - the implementation given by the `act_runner` issue linked above worked first try.
+            options: |
+              --add-host=docker:host-gateway -v /certs:/certs
+              -e "DOCKER_HOST=tcp://docker:2376/"
+              -e "DOCKER_TLS_CERTDIR=/certs"
+              -e "DOCKER_TLS_VERIFY=1"
+              -e "DOCKER_CERT_PATH=/certs/server"

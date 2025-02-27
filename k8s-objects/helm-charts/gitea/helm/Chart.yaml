@@ -7,6 +7,7 @@ version: 0.1.0
 appVersion: "1.19.2"
 
 dependencies:
+  # Using a local dependency to avoid the bug described [here](https://gitea.com/gitea/helm-chart/issues/764)
   - name: gitea
     repository: https://dl.gitea.io/charts/
-    version: "10.6.0"
+    version: "10.6.1"
