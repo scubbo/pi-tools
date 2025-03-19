@@ -99,11 +99,19 @@ gitea:
             # should be required for DinD.
             valid_volumes:
               - /certs
+              - /var/run/secrets/kubernetes.io/serviceaccount
             # `docker_host` is mentioned in https://gitea.com/gitea/act_runner/src/branch/main/internal/pkg/config/config.example.yaml#L92,
             # but I haven't tried that - the implementation given by the `act_runner` issue linked above worked first try.
+            #
+            # `--volume ...` causes the specifed volume to get mounted into the container - which, in the case of
+            # this particular path, means that the container can use the `token` to act-as the Kubernetes Service
+            # Account. This is a sub-optimal solution for authentication - see my question here:
+            # https://forum.gitea.com/t/actions-hashicorp-vault-integration/10982
+            # Took inspiration from https://gitea.com/gitea/act_runner/issues/378#issuecomment-918060
             options: |
               --add-host=docker:host-gateway -v /certs:/certs
               -e "DOCKER_HOST=tcp://docker:2376/"
               -e "DOCKER_TLS_CERTDIR=/certs"
               -e "DOCKER_TLS_VERIFY=1"
               -e "DOCKER_CERT_PATH=/certs/server"
+              --volume "/var/run/secrets/kubernetes.io/serviceaccount:/var/run/secrets/kubernetes.io/serviceaccount:ro"
