@@ -83,7 +83,7 @@ cat /home/pi/.ssh/id_ed25519.pub
 #
 sed -i \
 '$ s/$/ cgroup_enable=memory cgroup_memory=1 swapaccount=1/' \
-/boot/cmdline.txt
+/boot/firmware/cmdline.txt
 echo "The preceding change necessitates a reboot. Going down in..."
 for i in {10..1}
 do
